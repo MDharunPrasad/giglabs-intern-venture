@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -179,12 +178,13 @@ const Index = () => {
                 <span className="text-sm text-blue-100">Applications Progress</span>
                 <span className="text-sm text-blue-100 font-semibold">{progressValue}%</span>
               </div>
-              <div className="relative h-3 bg-white/20 rounded-full overflow-hidden">
+              <div className="relative h-4 bg-white/20 rounded-full overflow-hidden shadow-lg">
                 <div 
-                  className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000 ease-out animate-pulse" 
+                  className="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-2000 ease-out relative overflow-hidden" 
                   style={{ width: `${progressValue}%` }}
                 >
-                  <div className="h-full w-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-300/0 via-green-300/50 to-green-300/0 animate-[shimmer_2s_ease-in-out_infinite]"></div>
                 </div>
               </div>
               <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
@@ -201,7 +201,7 @@ const Index = () => {
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 active:bg-gray-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-blue-600 active:bg-gray-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
                 onClick={() => window.location.href = '/campus-ambassador'}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
@@ -730,6 +730,13 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 };
