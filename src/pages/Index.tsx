@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus } from 'lucide-react';
+import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, Linkedin, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -24,47 +25,45 @@ const Index = () => {
   });
 
   const [showChat, setShowChat] = useState(false);
-  const [showAmbassadorForm, setShowAmbassadorForm] = useState(false);
-  const [ambassadorData, setAmbassadorData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    college: '',
-    year: '',
-    experience: ''
-  });
-
   const [chatMessages, setChatMessages] = useState([
     { type: 'bot', message: 'Hi! I\'m here to help you with any questions about GigLabs internships. How can I assist you today?' }
   ]);
   const [chatInput, setChatInput] = useState('');
 
   const domains = [
-    { name: 'Frontend Development', icon: Monitor, description: 'React, Vue, Angular, and modern web technologies' },
-    { name: 'Backend Development', icon: Database, description: 'Node.js, Python, Java, and server-side technologies' },
-    { name: 'Fullstack Development', icon: Code, description: 'Complete web application development' },
-    { name: 'UI/UX Design', icon: Palette, description: 'User interface and experience design' },
-    { name: 'AI/ML', icon: Brain, description: 'Artificial Intelligence and Machine Learning' }
+    { name: 'Frontend Development', icon: Monitor, description: 'React, Vue, Angular, and modern web technologies', color: 'bg-blue-500' },
+    { name: 'Backend Development', icon: Database, description: 'Node.js, Python, Java, and server-side technologies', color: 'bg-green-500' },
+    { name: 'Fullstack Development', icon: Code, description: 'Complete web application development', color: 'bg-purple-500' },
+    { name: 'UI/UX Design', icon: Palette, description: 'User interface and experience design', color: 'bg-pink-500' },
+    { name: 'AI/ML', icon: Brain, description: 'Artificial Intelligence and Machine Learning', color: 'bg-orange-500' }
+  ];
+
+  const predefinedQuestions = [
+    "What certificates will I receive?",
+    "How do I get the money back guarantee?",
+    "What resources are provided?",
+    "How does the 4-month interview process work?",
+    "Can I switch domains mid-internship?",
+    "What are the working hours?",
+    "Is there any placement support?"
   ];
 
   const calculatePrice = () => {
-    if (!formData.internshipMode || !formData.duration) return { base: 0, fees: 0, total: 0 };
+    if (!formData.internshipMode || !formData.duration) return { base: 0, total: 0 };
     
     const basePrice = formData.internshipMode === 'remote' ? 299 : 999;
     const duration = parseInt(formData.duration);
     
-    let totalBase = basePrice;
+    let totalPrice = basePrice;
     for (let i = 2; i <= duration; i++) {
-      totalBase += basePrice * Math.pow(1.9, i - 1);
+      totalPrice += basePrice;
     }
     
-    const fees = totalBase * 0.9; // 90% additional fees
-    const total = totalBase + fees;
-    const roundedTotal = Math.round(total / 10) * 10; // Round to nearest 10
+    // Round to nearest 10
+    const roundedTotal = Math.round(totalPrice / 10) * 10;
     
     return {
-      base: Math.round(totalBase),
-      fees: Math.round(fees),
+      base: totalPrice,
       total: roundedTotal
     };
   };
@@ -88,30 +87,12 @@ const Index = () => {
     });
   };
 
-  const handleAmbassadorSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Ambassador Application Submitted!",
-      description: "We'll review your application and contact you within 48 hours.",
-    });
-    setShowAmbassadorForm(false);
-    setAmbassadorData({
-      name: '',
-      email: '',
-      phone: '',
-      college: '',
-      year: '',
-      experience: ''
-    });
-  };
-
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     setChatMessages(prev => [...prev, { type: 'user', message: chatInput }]);
     
-    // Simulate AI response
     setTimeout(() => {
       const responses = [
         "Thanks for your question! Our internships are designed to provide real-world experience with industry mentors.",
@@ -119,13 +100,45 @@ const Index = () => {
         "Our support team is available 24/7 to help you throughout your internship journey.",
         "The certificate you receive is industry-recognized and will add value to your career profile.",
         "Yes, we have tie-ups with various companies and some of our top performers get job opportunities!",
-        "Students who complete 4-month internships get direct interview opportunities at GigLabs!"
+        "Students who complete 4-month internships get direct interview opportunities at GigLabs!",
+        "We provide comprehensive learning resources including YouTube videos, courses, and project guidelines.",
+        "The money back guarantee applies to the first 10 students who successfully complete their internship.",
+        "You can switch between remote and in-office modes with prior approval from your mentor.",
+        "Regular assignment completion is mandatory for certificate issuance."
       ];
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
       setChatMessages(prev => [...prev, { type: 'bot', message: randomResponse }]);
     }, 1000);
 
     setChatInput('');
+  };
+
+  const handleQuestionClick = (question: string) => {
+    setChatMessages(prev => [...prev, { type: 'user', message: question }]);
+    
+    setTimeout(() => {
+      let response = "";
+      if (question.includes("certificates")) {
+        response = "You'll receive an official offer letter and experience certificate upon successful completion of your internship.";
+      } else if (question.includes("money back")) {
+        response = "The first 10 students who successfully complete their internship program will receive a full refund!";
+      } else if (question.includes("resources")) {
+        response = "We provide YouTube tutorial videos, coding courses, project documentation, and direct mentorship support.";
+      } else if (question.includes("4-month interview")) {
+        response = "Students who complete a 4-month internship get direct interview opportunities at GigLabs for positions in their internship domain.";
+      } else if (question.includes("switch domains")) {
+        response = "Domain switching is possible in the first week with mentor approval, subject to availability.";
+      } else if (question.includes("working hours")) {
+        response = "Flexible working hours with 4-6 hours daily commitment. In-office interns work 10 AM to 4 PM.";
+      } else {
+        response = "Yes! We provide placement support and have partnerships with various companies for job opportunities.";
+      }
+      setChatMessages(prev => [...prev, { type: 'bot', message: response }]);
+    }, 1000);
+  };
+
+  const scrollToForm = () => {
+    document.getElementById('application')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -148,7 +161,7 @@ const Index = () => {
               <Button 
                 size="lg"
                 className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => document.getElementById('application')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={scrollToForm}
               >
                 Apply Now 🎯
               </Button>
@@ -156,7 +169,7 @@ const Index = () => {
                 size="lg"
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => setShowAmbassadorForm(true)}
+                onClick={() => window.open('/campus-ambassador', '_blank')}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
                 Become Campus Ambassador
@@ -184,10 +197,20 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">About GigLabs</h2>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              GigLabs is a cutting-edge technology company focused on providing real-world experience to aspiring developers and designers. 
+            <p className="text-xl text-gray-600 leading-relaxed mb-4">
+              GigLabs is a cutting-edge technology company based in Mangalore, Karnataka, focused on providing real-world experience to aspiring developers and designers. 
               We bridge the gap between academic learning and industry requirements through hands-on projects, mentorship, and direct industry exposure.
             </p>
+            <div className="flex justify-center space-x-4">
+              <Button variant="outline" onClick={() => window.open('https://www.giglabs.tech/', '_blank')}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Visit Website
+              </Button>
+              <Button variant="outline" onClick={() => window.open('https://www.linkedin.com/company/thegiglabs/posts/?feedView=all', '_blank')}>
+                <Linkedin className="mr-2 h-4 w-4" />
+                LinkedIn
+              </Button>
+            </div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -234,13 +257,23 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {domains.map((domain, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-blue-300">
-                <CardHeader className="text-center">
+              <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-blue-300 relative overflow-hidden">
+                <div className={`absolute top-0 left-0 right-0 h-2 ${domain.color}`}></div>
+                <CardHeader className="text-center pt-6">
                   <domain.icon className="h-16 w-16 mx-auto mb-4 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
                   <CardTitle className="text-xl text-gray-900">{domain.name}</CardTitle>
                 </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-gray-600">{domain.description}</p>
+                <CardContent className="text-center pb-6">
+                  <p className="text-gray-600 mb-4">{domain.description}</p>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    onClick={() => {
+                      setFormData({...formData, domain: domain.name});
+                      scrollToForm();
+                    }}
+                  >
+                    Apply Now
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -257,7 +290,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-4">₹299</div>
-                  <p className="text-sm text-blue-700 mb-4">First month • 90% increase per additional month</p>
+                  <p className="text-sm text-blue-700 mb-4">Per month • Additional months same price</p>
                   <ul className="text-left space-y-2 text-blue-800">
                     <li>• Online mentorship</li>
                     <li>• Live Zoom classes</li>
@@ -274,7 +307,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-4">₹999</div>
-                  <p className="text-sm text-purple-700 mb-4">First month • 90% increase per additional month</p>
+                  <p className="text-sm text-purple-700 mb-4">Per month • Additional months same price</p>
                   <ul className="text-left space-y-2 text-purple-800">
                     <li>• In-person mentorship</li>
                     <li>• Direct industry meetings</li>
@@ -294,7 +327,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Perks Section - Streamlined */}
+      {/* Perks Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -427,7 +460,7 @@ const Index = () => {
 
                   <div>
                     <Label htmlFor="domain">Internship Domain *</Label>
-                    <Select onValueChange={(value) => setFormData({...formData, domain: value})}>
+                    <Select value={formData.domain} onValueChange={(value) => setFormData({...formData, domain: value})}>
                       <SelectTrigger className="mt-2">
                         <SelectValue placeholder="Select your domain" />
                       </SelectTrigger>
@@ -474,26 +507,24 @@ const Index = () => {
                     <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
                       <CardContent className="p-6">
                         <div className="text-center">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Breakdown</h3>
-                          <div className="space-y-2 mb-4">
-                            <div className="flex justify-between text-lg">
-                              <span>Base Amount:</span>
-                              <span>₹{calculatePrice().base}</span>
-                            </div>
-                            <div className="flex justify-between text-lg">
-                              <span>Processing Fees:</span>
-                              <span>₹{calculatePrice().fees}</span>
-                            </div>
-                            <hr className="my-2" />
-                            <div className="flex justify-between text-2xl font-bold text-green-600">
-                              <span>Total Amount:</span>
-                              <span>₹{calculatePrice().total}</span>
-                            </div>
+                          <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Details</h3>
+                          <div className="flex justify-between text-2xl font-bold text-green-600 mb-6">
+                            <span>Total Amount:</span>
+                            <span>₹{calculatePrice().total}</span>
                           </div>
-                          <div className="flex justify-center space-x-4 mb-4">
-                            <Badge className="bg-blue-100 text-blue-800">Google Pay</Badge>
-                            <Badge className="bg-orange-100 text-orange-800">Amazon Pay</Badge>
-                            <Badge className="bg-purple-100 text-purple-800">UPI</Badge>
+                          <div className="flex justify-center space-x-6 mb-4">
+                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
+                              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">G</div>
+                              <span className="text-sm font-medium">Google Pay</span>
+                            </div>
+                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
+                              <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white text-xs font-bold">A</div>
+                              <span className="text-sm font-medium">Amazon Pay</span>
+                            </div>
+                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
+                              <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white text-xs font-bold">U</div>
+                              <span className="text-sm font-medium">UPI</span>
+                            </div>
                           </div>
                           <p className="text-sm text-gray-600">
                             Mode: {formData.internshipMode} • Duration: {formData.duration} month(s)
@@ -515,126 +546,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Campus Ambassador Form Modal */}
-      {showAmbassadorForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-              <CardTitle className="text-2xl flex justify-between items-center">
-                Campus Ambassador Application
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAmbassadorForm(false)}
-                  className="text-white hover:bg-white/20"
-                >
-                  ✕
-                </Button>
-              </CardTitle>
-              <CardDescription className="text-purple-100">
-                Help us reach students at your college and earn commissions!
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="mb-6">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-yellow-800 mb-2">Commission Structure:</h4>
-                  <p className="text-yellow-700 text-sm">
-                    Bring 50+ students from your college with valid proof and earn a percentage commission on their enrollment fees!
-                  </p>
-                </div>
-              </div>
-              
-              <form onSubmit={handleAmbassadorSubmit} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="ambassadorName">Full Name *</Label>
-                    <Input
-                      id="ambassadorName"
-                      required
-                      value={ambassadorData.name}
-                      onChange={(e) => setAmbassadorData({...ambassadorData, name: e.target.value})}
-                      className="mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="ambassadorEmail">Email ID *</Label>
-                    <Input
-                      id="ambassadorEmail"
-                      type="email"
-                      required
-                      value={ambassadorData.email}
-                      onChange={(e) => setAmbassadorData({...ambassadorData, email: e.target.value})}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="ambassadorPhone">Phone Number *</Label>
-                    <Input
-                      id="ambassadorPhone"
-                      type="tel"
-                      required
-                      value={ambassadorData.phone}
-                      onChange={(e) => setAmbassadorData({...ambassadorData, phone: e.target.value})}
-                      className="mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="ambassadorYear">Year of Study *</Label>
-                    <Select onValueChange={(value) => setAmbassadorData({...ambassadorData, year: value})}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1st">1st Year</SelectItem>
-                        <SelectItem value="2nd">2nd Year</SelectItem>
-                        <SelectItem value="3rd">3rd Year</SelectItem>
-                        <SelectItem value="4th">4th Year</SelectItem>
-                        <SelectItem value="graduate">Graduate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="ambassadorCollege">College Name *</Label>
-                  <Input
-                    id="ambassadorCollege"
-                    required
-                    value={ambassadorData.college}
-                    onChange={(e) => setAmbassadorData({...ambassadorData, college: e.target.value})}
-                    className="mt-2"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="ambassadorExperience">Why do you want to be a Campus Ambassador? *</Label>
-                  <Textarea
-                    id="ambassadorExperience"
-                    required
-                    value={ambassadorData.experience}
-                    onChange={(e) => setAmbassadorData({...ambassadorData, experience: e.target.value})}
-                    className="mt-2"
-                    rows={4}
-                    placeholder="Tell us about your leadership experience, networking skills, and motivation..."
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 text-lg font-semibold rounded-lg"
-                >
-                  Submit Ambassador Application
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* AI Chat Assistant */}
       <div className="fixed bottom-6 right-6 z-50">
@@ -666,6 +577,22 @@ const Index = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* Predefined Questions */}
+                {chatMessages.length === 1 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 text-center">Quick questions:</p>
+                    {predefinedQuestions.slice(0, 3).map((question, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuestionClick(question)}
+                        className="w-full text-left p-2 text-xs bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-800 transition-colors"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <form onSubmit={handleChatSubmit} className="p-4 border-t">
                 <div className="flex space-x-2">
@@ -695,10 +622,61 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">GigLabs</h3>
-          <p className="text-gray-400 mb-6">Transforming careers through real-world experience</p>
-          <p className="text-sm text-gray-500">© 2024 GigLabs. All rights reserved.</p>
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold mb-4">GigLabs</h3>
+              <p className="text-gray-400 mb-4">Transforming careers through real-world experience</p>
+              <p className="text-sm text-gray-500">Software Company</p>
+              <p className="text-sm text-gray-500">Mangalore, Karnataka</p>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Phone className="h-4 w-4" />
+                  <span className="text-sm">+91 824 3539291</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">info@giglabs.tech</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">Mangalore, Karnataka</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+              <div className="space-y-2">
+                <div><a href="https://www.giglabs.tech/" className="text-sm text-gray-400 hover:text-white">Main Website</a></div>
+                <div><a href="#application" className="text-sm text-gray-400 hover:text-white">Apply Now</a></div>
+                <div><a href="/campus-ambassador" className="text-sm text-gray-400 hover:text-white">Campus Ambassador</a></div>
+                <div><a href="mailto:info@giglabs.tech" className="text-sm text-gray-400 hover:text-white">Contact Us</a></div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
+              <div className="flex space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => window.open('https://www.linkedin.com/company/thegiglabs/posts/?feedView=all', '_blank')}
+                  className="text-gray-400 hover:text-white p-2"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+            <p className="text-sm text-gray-500">© 2024 GigLabs. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
