@@ -150,7 +150,10 @@ const Index = () => {
   };
 
   const scrollToForm = () => {
-    document.getElementById('application')?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById('application');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -176,10 +179,14 @@ const Index = () => {
                 <span className="text-sm text-blue-100">Applications Progress</span>
                 <span className="text-sm text-blue-100 font-semibold">{progressValue}%</span>
               </div>
-              <Progress value={progressValue} className="h-3 bg-white/20">
-                <div className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-300" 
-                     style={{ width: `${progressValue}%` }} />
-              </Progress>
+              <div className="relative h-3 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000 ease-out animate-pulse" 
+                  style={{ width: `${progressValue}%` }}
+                >
+                  <div className="h-full w-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                </div>
+              </div>
               <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
             </div>
             
@@ -195,7 +202,7 @@ const Index = () => {
                 size="lg"
                 variant="outline"
                 className="border-2 border-white text-white hover:bg-white hover:text-blue-600 active:bg-gray-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => window.open('/campus-ambassador', '_blank')}
+                onClick={() => window.location.href = '/campus-ambassador'}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
                 Become Campus Ambassador
@@ -539,21 +546,21 @@ const Index = () => {
                             <span>₹{calculatePrice().total}</span>
                           </div>
                           <div className="flex justify-center space-x-4 mb-4">
-                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
-                              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">G</span>
+                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
+                              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                                <span className="text-white text-sm font-bold">G</span>
                               </div>
-                              <span className="text-sm font-medium">GPay</span>
+                              <span className="text-sm font-medium">Google Pay</span>
                             </div>
-                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
-                              <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">A</span>
+                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
+                              <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
+                                <span className="text-white text-sm font-bold">A</span>
                               </div>
                               <span className="text-sm font-medium">Amazon Pay</span>
                             </div>
-                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
-                              <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">U</span>
+                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
+                              <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                                <span className="text-white text-sm font-bold">U</span>
                               </div>
                               <span className="text-sm font-medium">UPI</span>
                             </div>
