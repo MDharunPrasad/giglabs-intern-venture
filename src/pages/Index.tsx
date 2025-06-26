@@ -6,14 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, Linkedin, ExternalLink } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [formData, setFormData] = useState({
     studentName: '',
-    location: '',
+    state: '',
     phoneNumber: '',
     collegeName: '',
     yearOfStudying: '',
@@ -29,6 +29,15 @@ const Index = () => {
     { type: 'bot', message: 'Hi! I\'m here to help you with any questions about GigLabs internships. How can I assist you today?' }
   ]);
   const [chatInput, setChatInput] = useState('');
+
+  const indianStates = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 
+    'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 
+    'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 
+    'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Chandigarh', 
+    'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep', 'Puducherry'
+  ];
 
   const domains = [
     { name: 'Frontend Development', icon: Monitor, description: 'React, Vue, Angular, and modern web technologies', color: 'bg-blue-500' },
@@ -47,6 +56,9 @@ const Index = () => {
     "What are the working hours?",
     "Is there any placement support?"
   ];
+
+  // Progress bar - simulating 59% filled
+  const progressValue = 59;
 
   const calculatePrice = () => {
     if (!formData.internshipMode || !formData.duration) return { base: 0, total: 0 };
@@ -149,7 +161,7 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-20 text-center">
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30">
-              🚀 Limited Time Offer - First 10 Get Money Back!
+              First 10 people to complete internship will receive cashback!
             </Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
               Not an Ordinary Internship
@@ -157,18 +169,32 @@ const Index = () => {
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
               Start your real-world journey with GigLabs today. Get industry exposure, work on live projects, and kickstart your career.
             </p>
+            
+            {/* Progress Bar */}
+            <div className="mb-8 max-w-md mx-auto">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-blue-100">Applications Progress</span>
+                <span className="text-sm text-blue-100 font-semibold">{progressValue}%</span>
+              </div>
+              <Progress value={progressValue} className="h-3 bg-white/20">
+                <div className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-300" 
+                     style={{ width: `${progressValue}%` }} />
+              </Progress>
+              <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="bg-white text-blue-600 hover:bg-blue-50 active:bg-blue-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
                 onClick={scrollToForm}
               >
-                Apply Now 🎯
+                Apply Now
               </Button>
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 active:bg-gray-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
                 onClick={() => window.open('/campus-ambassador', '_blank')}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
@@ -178,18 +204,6 @@ const Index = () => {
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
-      </section>
-
-      {/* Assignment Policy Notice */}
-      <section className="py-6 bg-yellow-50 border-b border-yellow-200">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center space-x-3 text-yellow-800">
-            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
-            <p className="text-center text-sm font-medium">
-              <strong>Important Notice:</strong> Regular assignment completion is mandatory. Missing assignments may result in certificate withholding and additional fees for certificate issuance.
-            </p>
-          </div>
-        </div>
       </section>
 
       {/* About GigLabs */}
@@ -202,12 +216,19 @@ const Index = () => {
               We bridge the gap between academic learning and industry requirements through hands-on projects, mentorship, and direct industry exposure.
             </p>
             <div className="flex justify-center space-x-4">
-              <Button variant="outline" onClick={() => window.open('https://www.giglabs.tech/', '_blank')}>
+              <Button 
+                variant="outline" 
+                className="hover:bg-blue-50 active:bg-blue-100"
+                onClick={() => window.open('https://www.giglabs.tech/', '_blank')}
+              >
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Visit Website
               </Button>
-              <Button variant="outline" onClick={() => window.open('https://www.linkedin.com/company/thegiglabs/posts/?feedView=all', '_blank')}>
-                <Linkedin className="mr-2 h-4 w-4" />
+              <Button 
+                variant="outline" 
+                className="hover:bg-blue-50 active:bg-blue-100"
+                onClick={() => window.open('https://www.linkedin.com/company/thegiglabs/posts/?feedView=all', '_blank')}
+              >
                 LinkedIn
               </Button>
             </div>
@@ -266,7 +287,7 @@ const Index = () => {
                 <CardContent className="text-center pb-6">
                   <p className="text-gray-600 mb-4">{domain.description}</p>
                   <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white"
                     onClick={() => {
                       setFormData({...formData, domain: domain.name});
                       scrollToForm();
@@ -320,7 +341,7 @@ const Index = () => {
 
             <div className="mt-8 text-center">
               <Badge className="bg-green-100 text-green-800 text-lg px-6 py-2">
-                🎯 Complete 4-month internship → Direct interview opportunity at GigLabs!
+                Complete 4-month internship → Direct interview opportunity at GigLabs!
               </Badge>
             </div>
           </div>
@@ -383,14 +404,19 @@ const Index = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="location">Location *</Label>
-                      <Input
-                        id="location"
-                        required
-                        value={formData.location}
-                        onChange={(e) => setFormData({...formData, location: e.target.value})}
-                        className="mt-2"
-                      />
+                      <Label htmlFor="state">State *</Label>
+                      <Select value={formData.state} onValueChange={(value) => setFormData({...formData, state: value})}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select your state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {indianStates.map((state) => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -512,17 +538,23 @@ const Index = () => {
                             <span>Total Amount:</span>
                             <span>₹{calculatePrice().total}</span>
                           </div>
-                          <div className="flex justify-center space-x-6 mb-4">
-                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
-                              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">G</div>
-                              <span className="text-sm font-medium">Google Pay</span>
+                          <div className="flex justify-center space-x-4 mb-4">
+                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
+                              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">G</span>
+                              </div>
+                              <span className="text-sm font-medium">GPay</span>
                             </div>
-                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
-                              <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white text-xs font-bold">A</div>
+                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
+                              <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">A</span>
+                              </div>
                               <span className="text-sm font-medium">Amazon Pay</span>
                             </div>
-                            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow">
-                              <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white text-xs font-bold">U</div>
+                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow border">
+                              <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">U</span>
+                              </div>
                               <span className="text-sm font-medium">UPI</span>
                             </div>
                           </div>
@@ -536,13 +568,25 @@ const Index = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
                   >
-                    Submit Application 🚀
+                    Submit Application
                   </Button>
                 </form>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Assignment Policy Notice */}
+      <section className="py-6 bg-yellow-50 border-y border-yellow-200">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center space-x-3 text-yellow-800">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+            <p className="text-center text-sm font-medium">
+              <strong>Important Notice:</strong> Regular assignment completion is mandatory. Missing assignments may result in certificate withholding and additional fees for certificate issuance.
+            </p>
           </div>
         </div>
       </section>
@@ -578,8 +622,8 @@ const Index = () => {
                   </div>
                 ))}
                 
-                {/* Predefined Questions */}
-                {chatMessages.length === 1 && (
+                {/* Predefined Questions - Show after each bot response */}
+                {chatMessages.length > 1 && chatMessages[chatMessages.length - 1].type === 'bot' && (
                   <div className="space-y-2">
                     <p className="text-xs text-gray-500 text-center">Quick questions:</p>
                     {predefinedQuestions.slice(0, 3).map((question, index) => (
@@ -613,7 +657,7 @@ const Index = () => {
         
         <Button
           onClick={() => setShowChat(!showChat)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full p-4 shadow-lg transform hover:scale-110 transition-all duration-300"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 rounded-full p-4 shadow-lg transform hover:scale-110 transition-all duration-300"
           size="lg"
         >
           <MessageCircle className="h-6 w-6" />
@@ -668,7 +712,7 @@ const Index = () => {
                   onClick={() => window.open('https://www.linkedin.com/company/thegiglabs/posts/?feedView=all', '_blank')}
                   className="text-gray-400 hover:text-white p-2"
                 >
-                  <Linkedin className="h-5 w-5" />
+                  LinkedIn
                 </Button>
               </div>
             </div>
