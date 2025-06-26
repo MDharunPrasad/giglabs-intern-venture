@@ -587,7 +587,7 @@ const Index = () => {
       </section>
 
       {/* Assignment Policy Notice */}
-      <section className="py-6 bg-yellow-50 border-y border-yellow-200">
+      <section className="py-6 pb-12 bg-yellow-50 border-y border-yellow-200">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center space-x-3 text-yellow-800">
             <AlertTriangle className="h-5 w-5 flex-shrink-0" />
