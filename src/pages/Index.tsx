@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,8 @@ import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palet
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     studentName: '',
     state: '',
@@ -50,7 +53,7 @@ const Index = () => {
     "What certificates will I receive?",
     "How do I get the money back guarantee?",
     "What resources are provided?",
-    "How does the 4-month interview process work?",
+    "How does the internship interview process work?",
     "Can I switch domains mid-internship?",
     "What are the working hours?",
     "Is there any placement support?"
@@ -111,7 +114,7 @@ const Index = () => {
         "Our support team is available 24/7 to help you throughout your internship journey.",
         "The certificate you receive is industry-recognized and will add value to your career profile.",
         "Yes, we have tie-ups with various companies and some of our top performers get job opportunities!",
-        "Students who complete 4-month internships get direct interview opportunities at GigLabs!",
+        "Students who complete internships get interview opportunities at GigLabs!",
         "We provide comprehensive learning resources including YouTube videos, courses, and project guidelines.",
         "The money back guarantee applies to the first 10 students who successfully complete their internship.",
         "You can switch between remote and in-office modes with prior approval from your mentor.",
@@ -135,8 +138,8 @@ const Index = () => {
         response = "The first 10 students who successfully complete their internship program will receive a full refund!";
       } else if (question.includes("resources")) {
         response = "We provide YouTube tutorial videos, coding courses, project documentation, and direct mentorship support.";
-      } else if (question.includes("4-month interview")) {
-        response = "Students who complete a 4-month internship get direct interview opportunities at GigLabs for positions in their internship domain.";
+      } else if (question.includes("interview process")) {
+        response = "Students who complete a 2-month internship get interview opportunities at GigLabs for positions in their internship domain.";
       } else if (question.includes("switch domains")) {
         response = "Domain switching is possible in the first week with mentor approval, subject to availability.";
       } else if (question.includes("working hours")) {
@@ -190,19 +193,30 @@ const Index = () => {
               <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
+            <div className="flex flex-col sm:flex-row gap-4 justify-center z-10 relative">
+              <Button
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 active:bg-blue-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={scrollToForm}
+                className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                onClick={() => {
+                  const el = document.getElementById('application');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    window.location.hash = '#application';
+                  }
+                }}
+                type="button"
               >
                 Apply Now
               </Button>
-              <Button 
+              <Button
                 size="lg"
-                variant="outline"
-                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-blue-600 active:bg-gray-100 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => window.location.href = '/campus-ambassador'}
+                className="bg-white text-purple-600 hover:bg-purple-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                onClick={() => {
+                  console.log('Become Campus Ambassador button clicked');
+                  navigate('/campus-ambassador');
+                }}
+                type="button"
               >
                 <UserPlus className="mr-2 h-5 w-5" />
                 Become Campus Ambassador
@@ -310,45 +324,89 @@ const Index = () => {
           {/* Pricing Info */}
           <div className="mt-16 max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-center mb-8 text-gray-900">Flexible Duration & Pricing</h3>
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-2 border-blue-200 bg-blue-50">
-                <CardHeader className="text-center">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+              {/* 1 Month Remote */}
+              <Card className="flex flex-col border-2 border-blue-200 bg-blue-50 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
+                <CardHeader className="text-center pb-0">
                   <CardTitle className="text-2xl text-blue-900">Remote Internship</CardTitle>
-                  <CardDescription className="text-blue-700">Work from anywhere</CardDescription>
+                  <CardDescription className="text-blue-700">1 Month • Work from anywhere</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
+                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
                   <div className="text-3xl font-bold text-blue-600 mb-4">₹299</div>
-                  <p className="text-sm text-blue-700 mb-4">Per month • Additional months same price</p>
-                  <ul className="text-left space-y-2 text-blue-800">
+                  <ul className="text-left space-y-2 text-blue-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
                     <li>• Online mentorship</li>
-                    <li>• Live Zoom classes</li>
-                    <li>• 24/7 online support</li>
+                    <li>• 24/7 mail response support</li>
                     <li>• Industry assignments</li>
+                    <li>• Offer letter & certificate</li>
+                    <li>• Real-world project experience</li>
                   </ul>
                 </CardContent>
               </Card>
-
-              <Card className="border-2 border-purple-200 bg-purple-50">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl text-purple-900">In-Office Internship</CardTitle>
-                  <CardDescription className="text-purple-700">Hands-on experience</CardDescription>
+              {/* 2 Month Remote */}
+              <Card className="flex flex-col border-2 border-blue-400 bg-blue-100 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
+                <CardHeader className="text-center pb-0">
+                  <CardTitle className="text-2xl text-blue-900">Remote Internship</CardTitle>
+                  <CardDescription className="text-blue-700">2 Months • Work from anywhere</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
+                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
+                  <div className="text-3xl font-bold text-blue-600 mb-4">₹500</div>
+                  <ul className="text-left space-y-2 text-blue-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
+                    <li>• Online mentorship</li>
+                    <li>• 24/7 mail response support</li>
+                    <li>• Industry assignments</li>
+                    <li>• Offer letter & certificate</li>
+                    <li>• Real-world project experience</li>
+                    <li>• Basics to advanced curriculum</li>
+                    <li>• Doubt session meetings</li>
+                    <li>• Free AI tools workshop</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              {/* 1 Month Onsite */}
+              <Card className="flex flex-col border-2 border-purple-200 bg-purple-50 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
+                <CardHeader className="text-center pb-0">
+                  <CardTitle className="text-2xl text-purple-900">Onsite Internship</CardTitle>
+                  <CardDescription className="text-purple-700">1 Month • Hands-on experience</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
                   <div className="text-3xl font-bold text-purple-600 mb-4">₹999</div>
-                  <p className="text-sm text-purple-700 mb-4">Per month • Additional months same price</p>
-                  <ul className="text-left space-y-2 text-purple-800">
+                  <ul className="text-left space-y-2 text-purple-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
                     <li>• In-person mentorship</li>
-                    <li>• Direct industry meetings</li>
-                    <li>• Collaborative environment</li>
+                    <li>• 24/7 mail response support</li>
+                    <li>• Industry assignments</li>
+                    <li>• Offer letter & certificate</li>
+                    <li>• Work environment experience</li>
                     <li>• Networking opportunities</li>
+                    <li>• Real-world project experience</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              {/* 2 Month Onsite */}
+              <Card className="flex flex-col border-2 border-purple-400 bg-purple-100 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
+                <CardHeader className="text-center pb-0">
+                  <CardTitle className="text-2xl text-purple-900">Onsite Internship</CardTitle>
+                  <CardDescription className="text-purple-700">2 Months • Hands-on experience</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
+                  <div className="text-3xl font-bold text-purple-600 mb-4">₹1800</div>
+                  <ul className="text-left space-y-2 text-purple-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
+                    <li>• In-person mentorship</li>
+                    <li>• 24/7 mail response support</li>
+                    <li>• Industry assignments</li>
+                    <li>• Offer letter & certificate</li>
+                    <li>• Work environment experience</li>
+                    <li>• Networking opportunities</li>
+                    <li>• Real-world project experience</li>
+                    <li>• Basics to advanced curriculum</li>
+                    <li>• Doubt session meetings</li>
+                    <li>• Free AI tools workshop</li>
                   </ul>
                 </CardContent>
               </Card>
             </div>
-
             <div className="mt-8 text-center">
               <Badge className="bg-green-100 text-green-800 text-lg px-6 py-2">
-                Complete 4-month internship → Direct interview opportunity at GigLabs!
+                All internships include assignments and tasks. Only 1 or 2 month plans available.
               </Badge>
             </div>
           </div>
@@ -529,8 +587,6 @@ const Index = () => {
                         <SelectContent>
                           <SelectItem value="1">1 Month</SelectItem>
                           <SelectItem value="2">2 Months</SelectItem>
-                          <SelectItem value="3">3 Months</SelectItem>
-                          <SelectItem value="4">4 Months</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -731,10 +787,14 @@ const Index = () => {
         </div>
       </footer>
 
-      <style jsx>{`
+      <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
+        }
+        .absolute.inset-0.bg-black\/20,
+        .absolute.bottom-0.left-0.right-0.h-32.bg-gradient-to-t {
+          pointer-events: none !important;
         }
       `}</style>
     </div>
