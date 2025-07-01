@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 
 interface AuthContextType {
@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, role: 'student' | 'staff', name: string) => Promise<void>
   signOut: () => Promise<void>
   loading: boolean
+  isConfigured: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,21 +27,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<'student' | 'staff' | null>(null)
   const [loading, setLoading] = useState(true)
+  const configured = isSupabaseConfigured()
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-        setUserRole(data?.role || null)
-      }
+    if (!configured) {
       setLoading(false)
+      return
+    }
+
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          setUserRole(data?.role || null)
+        }
+      } catch (error) {
+        console.error('Auth error:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getSession()
@@ -49,12 +61,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-        setUserRole(data?.role || null)
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          setUserRole(data?.role || null)
+        } catch (error) {
+          console.error('Profile fetch error:', error)
+        }
       } else {
         setUserRole(null)
       }
@@ -62,9 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [configured])
 
   const signUp = async (email: string, password: string, role: 'student' | 'staff', name: string) => {
+    if (!configured) {
+      throw new Error('Supabase not configured. Please set environment variables.')
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -89,6 +109,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signIn = async (email: string, password: string, role: 'student' | 'staff') => {
+    if (!configured) {
+      throw new Error('Supabase not configured. Please set environment variables.')
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -98,6 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async () => {
+    if (!configured) return
+    
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   }
@@ -108,7 +134,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signOut,
-    loading
+    loading,
+    isConfigured: configured
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import Login from '@/components/Login';
 import StudentDashboard from '@/components/StudentDashboard';
 import StaffDashboard from '@/components/StaffDashboard';
@@ -133,6 +133,15 @@ const Index = () => {
       return;
     }
     
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Configuration Error",
+        description: "Please configure Supabase environment variables.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const pricing = calculatePrice();
     
     if (pricing.total === 0) {
@@ -144,42 +153,52 @@ const Index = () => {
       return;
     }
 
-    // Save enrollment to database
-    const { error } = await supabase
-      .from('enrollments')
-      .insert({
-        user_id: user.id,
-        student_name: formData.studentName,
-        state: formData.state,
-        phone_number: formData.phoneNumber,
-        college_name: formData.collegeName,
-        year_of_studying: formData.yearOfStudying,
-        email_id: formData.emailId,
-        secondary_email_id: formData.secondaryEmailId,
-        domain: formData.domain,
-        mode: formData.internshipMode,
-        duration: parseInt(formData.duration),
-        amount: pricing.total,
-        package_name: `${formData.internshipMode === 'remote' ? 'Remote' : 'Onsite'} ${formData.duration} Month${formData.duration === '1' ? '' : 's'}`
-      });
+    try {
+      // Save enrollment to database
+      const { error } = await supabase
+        .from('enrollments')
+        .insert({
+          user_id: user.id,
+          student_name: formData.studentName,
+          state: formData.state,
+          phone_number: formData.phoneNumber,
+          college_name: formData.collegeName,
+          year_of_studying: formData.yearOfStudying,
+          email_id: formData.emailId,
+          secondary_email_id: formData.secondaryEmailId,
+          domain: formData.domain,
+          mode: formData.internshipMode,
+          duration: parseInt(formData.duration),
+          amount: pricing.total,
+          package_name: `${formData.internshipMode === 'remote' ? 'Remote' : 'Onsite'} ${formData.duration} Month${formData.duration === '1' ? '' : 's'}`
+        });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
+      });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to submit application. Please try again.",
+        description: error.message || "Failed to submit application. Please try again.",
         variant: "destructive"
       });
-      return;
     }
-
-    toast({
-      title: "Application Submitted!",
-      description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
-    });
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (showLogin) {
@@ -192,6 +211,32 @@ const Index = () => {
 
   if (user && userRole === 'staff') {
     return <StaffDashboard />;
+  }
+
+  // Show configuration error if Supabase is not configured
+  if (!isSupabaseConfigured()) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+            <CardTitle>Configuration Required</CardTitle>
+            <CardDescription>
+              Please configure your Supabase environment variables to continue.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <p><strong>Required variables:</strong></p>
+              <code className="block bg-gray-100 p-2 rounded">
+                VITE_SUPABASE_URL=your_supabase_url<br />
+                VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+              </code>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
