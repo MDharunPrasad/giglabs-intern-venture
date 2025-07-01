@@ -1,10 +1,8 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
-import { User } from '@supabase/supabase-js'
+import React, { createContext, useContext, useState } from 'react'
 
 interface AuthContextType {
-  user: User | null
+  user: { id: string; email: string; name: string } | null
   userRole: 'student' | 'staff' | null
   signIn: (email: string, password: string, role: 'student' | 'staff') => Promise<void>
   signUp: (email: string, password: string, role: 'student' | 'staff', name: string) => Promise<void>
@@ -24,109 +22,57 @@ export const useAuth = () => {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null)
   const [userRole, setUserRole] = useState<'student' | 'staff' | null>(null)
-  const [loading, setLoading] = useState(true)
-  const configured = isSupabaseConfigured()
-
-  useEffect(() => {
-    if (!configured) {
-      setLoading(false)
-      return
-    }
-
-    const getSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-          setUserRole(data?.role || null)
-        }
-      } catch (error) {
-        console.error('Auth error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    getSession()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        try {
-          const { data } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-          setUserRole(data?.role || null)
-        } catch (error) {
-          console.error('Profile fetch error:', error)
-        }
-      } else {
-        setUserRole(null)
-      }
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [configured])
+  const [loading, setLoading] = useState(false)
 
   const signUp = async (email: string, password: string, role: 'student' | 'staff', name: string) => {
-    if (!configured) {
-      throw new Error('Supabase not configured. Please set environment variables.')
-    }
-
-    const { data, error } = await supabase.auth.signUp({
+    // Simulate signup - in frontend only mode
+    const newUser = {
+      id: Math.random().toString(36).substr(2, 9),
       email,
-      password,
-      options: {
-        data: {
-          name,
-          role
-        }
-      }
-    })
-
-    if (error) throw error
-
-    if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email,
-        name,
-        role
-      })
+      name
     }
+    setUser(newUser)
+    setUserRole(role)
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('user', JSON.stringify(newUser))
+    localStorage.setItem('userRole', role)
   }
 
   const signIn = async (email: string, password: string, role: 'student' | 'staff') => {
-    if (!configured) {
-      throw new Error('Supabase not configured. Please set environment variables.')
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
+    // Simulate signin - in frontend only mode
+    const mockUser = {
+      id: Math.random().toString(36).substr(2, 9),
       email,
-      password
-    })
-
-    if (error) throw error
+      name: email.split('@')[0]
+    }
+    setUser(mockUser)
+    setUserRole(role)
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('user', JSON.stringify(mockUser))
+    localStorage.setItem('userRole', role)
   }
 
   const signOut = async () => {
-    if (!configured) return
-    
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    setUser(null)
+    setUserRole(null)
+    localStorage.removeItem('user')
+    localStorage.removeItem('userRole')
   }
+
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('user')
+    const savedRole = localStorage.getItem('userRole')
+    
+    if (savedUser && savedRole) {
+      setUser(JSON.parse(savedUser))
+      setUserRole(savedRole as 'student' | 'staff')
+    }
+  }, [])
 
   const value = {
     user,
@@ -135,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     loading,
-    isConfigured: configured
+    isConfigured: true // Frontend always configured
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

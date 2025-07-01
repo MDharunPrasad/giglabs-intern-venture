@@ -6,11 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn } from 'lucide-react';
+import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import Login from '@/components/Login';
 import StudentDashboard from '@/components/StudentDashboard';
 import StaffDashboard from '@/components/StaffDashboard';
@@ -66,9 +64,6 @@ const Index = () => {
     "Is there any placement support?"
   ];
 
-  // Progress bar - simulating 59% filled
-  const progressValue = 59;
-
   // Chat functions
   const handleQuestionClick = (question: string) => {
     setChatMessages(prev => [...prev, { type: 'user', message: question }]);
@@ -116,7 +111,7 @@ const Index = () => {
     if (formData.internshipMode === 'remote') {
       basePrice = formData.duration === '1' ? 499 : 899;
     } else if (formData.internshipMode === 'in-office') {
-      basePrice = formData.duration === '1' ? 3000 : 1000; // Summer internship for 2 months
+      basePrice = formData.duration === '1' ? 3000 : 1000;
     }
     
     return {
@@ -133,15 +128,6 @@ const Index = () => {
       return;
     }
     
-    if (!isSupabaseConfigured()) {
-      toast({
-        title: "Configuration Error",
-        description: "Please configure Supabase environment variables.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     const pricing = calculatePrice();
     
     if (pricing.total === 0) {
@@ -153,41 +139,25 @@ const Index = () => {
       return;
     }
 
-    try {
-      // Save enrollment to database
-      const { error } = await supabase
-        .from('enrollments')
-        .insert({
-          user_id: user.id,
-          student_name: formData.studentName,
-          state: formData.state,
-          phone_number: formData.phoneNumber,
-          college_name: formData.collegeName,
-          year_of_studying: formData.yearOfStudying,
-          email_id: formData.emailId,
-          secondary_email_id: formData.secondaryEmailId,
-          domain: formData.domain,
-          mode: formData.internshipMode,
-          duration: parseInt(formData.duration),
-          amount: pricing.total,
-          package_name: `${formData.internshipMode === 'remote' ? 'Remote' : 'Onsite'} ${formData.duration} Month${formData.duration === '1' ? '' : 's'}`
-        });
+    // Since this is frontend only, just show success message
+    toast({
+      title: "Application Submitted!",
+      description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
+    });
 
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Application Submitted!",
-        description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit application. Please try again.",
-        variant: "destructive"
-      });
-    }
+    // Reset form
+    setFormData({
+      studentName: '',
+      state: '',
+      phoneNumber: '',
+      collegeName: '',
+      yearOfStudying: '',
+      emailId: '',
+      secondaryEmailId: '',
+      internshipMode: '',
+      duration: '',
+      domain: ''
+    });
   };
 
   if (loading) {
@@ -213,32 +183,6 @@ const Index = () => {
     return <StaffDashboard />;
   }
 
-  // Show configuration error if Supabase is not configured
-  if (!isSupabaseConfigured()) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-            <CardTitle>Configuration Required</CardTitle>
-            <CardDescription>
-              Please configure your Supabase environment variables to continue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <p><strong>Required variables:</strong></p>
-              <code className="block bg-gray-100 p-2 rounded">
-                VITE_SUPABASE_URL=your_supabase_url<br />
-                VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-              </code>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Hero Section */}
@@ -255,23 +199,6 @@ const Index = () => {
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
               Start your real-world journey with GigLabs today. Get industry exposure, work on live projects, and kickstart your career.
             </p>
-            
-            {/* Progress Bar */}
-            <div className="mb-8 max-w-md mx-auto">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-blue-100">Applications Progress</span>
-                <span className="text-sm text-blue-100 font-semibold">59%</span>
-              </div>
-              <div className="relative h-4 bg-white/20 rounded-full overflow-hidden shadow-lg">
-                <div 
-                  className="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-2000 ease-out relative overflow-hidden animate-pulse" 
-                  style={{ width: '59%' }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
-                </div>
-              </div>
-              <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
-            </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center z-10 relative">
               {user ? (
@@ -308,7 +235,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
       </section>
 
       {/* About GigLabs */}
@@ -454,7 +380,7 @@ const Index = () => {
             </Card>
 
             {/* Elite Package - ₹5000 */}
-            <Card className="text-center border-2 border-gold-400 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+            <Card className="text-center border-2 border-yellow-400 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-1 text-xs font-bold">
                 MOST POPULAR
               </div>
@@ -507,7 +433,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Application Form - Updated to require login */}
+      {/* Application Form - Updated for frontend only */}
       <section id="application" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
@@ -688,7 +614,7 @@ const Index = () => {
 
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
                     >
                       Submit Application
                     </Button>
@@ -766,7 +692,7 @@ const Index = () => {
         
         <Button
           onClick={() => setShowChat(!showChat)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 rounded-full p-4 shadow-lg transform hover:scale-110 transition-all duration-300"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full p-4 shadow-lg transform hover:scale-110 transition-all duration-300"
           size="lg"
         >
           <MessageCircle className="h-6 w-6" />
@@ -832,17 +758,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .absolute.inset-0.bg-black\/20,
-        .absolute.bottom-0.left-0.right-0.h-32.bg-gradient-to-t {
-          pointer-events: none !important;
-        }
-      `}</style>
     </div>
   );
 };
