@@ -322,86 +322,86 @@ const Index = () => {
           </div>
 
           {/* Pricing Info */}
-          <div className="mt-16 max-w-4xl mx-auto">
+          <div className="mt-16 max-w-6xl mx-auto">
             <h3 className="text-3xl font-bold text-center mb-8 text-gray-900">Flexible Duration & Pricing</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 items-stretch">
               {/* 1 Month Remote */}
-              <Card className="flex flex-col border-2 border-blue-200 bg-blue-50 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
-                <CardHeader className="text-center pb-0">
-                  <CardTitle className="text-2xl text-blue-900">Remote Internship</CardTitle>
-                  <CardDescription className="text-blue-700">1 Month • Work from anywhere</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
-                  <div className="text-3xl font-bold text-blue-600 mb-4">₹299</div>
-                  <ul className="text-left space-y-2 text-blue-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
-                    <li>• Online mentorship</li>
-                    <li>• 24/7 mail response support</li>
-                    <li>• Industry assignments</li>
-                    <li>• Offer letter & certificate</li>
-                    <li>• Real-world project experience</li>
-                  </ul>
-                </CardContent>
+              <Card className="flex flex-col items-center border-2 border-blue-200 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
+                <div className="flex flex-col items-center mb-4">
+                  <svg className="h-12 w-12 text-blue-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>
+                  <span className="text-blue-900 font-bold text-lg">Remote Internship</span>
+                  <span className="text-blue-700 text-sm">1 Month • Work from anywhere</span>
+                </div>
+                <div className="text-4xl font-extrabold text-blue-600 mb-2">₹299</div>
+                <div className="text-gray-500 text-sm mb-4 text-center">Best for those who want a quick, flexible remote experience.</div>
+                <ul className="text-left space-y-2 text-blue-800 w-full max-w-xs mx-auto mb-4">
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Online mentorship</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> 24/7 mail support</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Industry assignments</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Offer letter & certificate</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Real-world project experience</li>
+                </ul>
               </Card>
               {/* 2 Month Remote */}
-              <Card className="flex flex-col border-2 border-blue-400 bg-blue-100 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
-                <CardHeader className="text-center pb-0">
-                  <CardTitle className="text-2xl text-blue-900">Remote Internship</CardTitle>
-                  <CardDescription className="text-blue-700">2 Months • Work from anywhere</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
-                  <div className="text-3xl font-bold text-blue-600 mb-4">₹500</div>
-                  <ul className="text-left space-y-2 text-blue-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
-                    <li>• Online mentorship</li>
-                    <li>• 24/7 mail response support</li>
-                    <li>• Industry assignments</li>
-                    <li>• Offer letter & certificate</li>
-                    <li>• Real-world project experience</li>
-                    <li>• Basics to advanced curriculum</li>
-                    <li>• Doubt session meetings</li>
-                    <li>• Free AI tools workshop</li>
-                  </ul>
-                </CardContent>
+              <Card className="flex flex-col items-center border-2 border-blue-400 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
+                <div className="flex flex-col items-center mb-4">
+                  <svg className="h-12 w-12 text-blue-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>
+                  <span className="text-blue-900 font-bold text-lg">Remote Internship</span>
+                  <span className="text-blue-700 text-sm">2 Months • Work from anywhere</span>
+                </div>
+                <div className="text-4xl font-extrabold text-blue-600 mb-2">₹500</div>
+                <div className="text-gray-500 text-sm mb-4 text-center">Extended remote learning with advanced curriculum and workshops.</div>
+                <ul className="text-left space-y-2 text-blue-800 w-full max-w-xs mx-auto mb-4">
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Online mentorship</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> 24/7 mail support</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Industry assignments</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Offer letter & certificate</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Real-world project experience</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Basics to advanced curriculum</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Doubt session meetings</li>
+                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Free AI tools workshop</li>
+                </ul>
               </Card>
               {/* 1 Month Onsite */}
-              <Card className="flex flex-col border-2 border-purple-200 bg-purple-50 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
-                <CardHeader className="text-center pb-0">
-                  <CardTitle className="text-2xl text-purple-900">Onsite Internship</CardTitle>
-                  <CardDescription className="text-purple-700">1 Month • Hands-on experience</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
-                  <div className="text-3xl font-bold text-purple-600 mb-4">₹999</div>
-                  <ul className="text-left space-y-2 text-purple-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
-                    <li>• In-person mentorship</li>
-                    <li>• 24/7 mail response support</li>
-                    <li>• Industry assignments</li>
-                    <li>• Offer letter & certificate</li>
-                    <li>• Work environment experience</li>
-                    <li>• Networking opportunities</li>
-                    <li>• Real-world project experience</li>
-                  </ul>
-                </CardContent>
+              <Card className="flex flex-col items-center border-2 border-purple-200 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
+                <div className="flex flex-col items-center mb-4">
+                  <svg className="h-12 w-12 text-purple-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /></svg>
+                  <span className="text-purple-900 font-bold text-lg">Onsite Internship</span>
+                  <span className="text-purple-700 text-sm">1 Month • Hands-on experience</span>
+                </div>
+                <div className="text-4xl font-extrabold text-purple-600 mb-2">₹999</div>
+                <div className="text-gray-500 text-sm mb-4 text-center">Experience real office culture, mentorship, and networking in person.</div>
+                <ul className="text-left space-y-2 text-purple-800 w-full max-w-xs mx-auto mb-4">
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> In-person mentorship</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> 24/7 mail support</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Industry assignments</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Offer letter & certificate</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Work environment experience</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Networking opportunities</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Real-world project experience</li>
+                </ul>
               </Card>
               {/* 2 Month Onsite */}
-              <Card className="flex flex-col border-2 border-purple-400 bg-purple-100 rounded-2xl shadow-md px-8 py-8 min-w-[260px] max-w-[320px] mx-auto h-full">
-                <CardHeader className="text-center pb-0">
-                  <CardTitle className="text-2xl text-purple-900">Onsite Internship</CardTitle>
-                  <CardDescription className="text-purple-700">2 Months • Hands-on experience</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-start text-center pt-2 pb-0 flex-1">
-                  <div className="text-3xl font-bold text-purple-600 mb-4">₹1800</div>
-                  <ul className="text-left space-y-2 text-purple-800 mx-auto w-fit min-h-[180px] flex flex-col justify-start">
-                    <li>• In-person mentorship</li>
-                    <li>• 24/7 mail response support</li>
-                    <li>• Industry assignments</li>
-                    <li>• Offer letter & certificate</li>
-                    <li>• Work environment experience</li>
-                    <li>• Networking opportunities</li>
-                    <li>• Real-world project experience</li>
-                    <li>• Basics to advanced curriculum</li>
-                    <li>• Doubt session meetings</li>
-                    <li>• Free AI tools workshop</li>
-                  </ul>
-                </CardContent>
+              <Card className="flex flex-col items-center border-2 border-purple-400 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
+                <div className="flex flex-col items-center mb-4">
+                  <svg className="h-12 w-12 text-purple-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /></svg>
+                  <span className="text-purple-900 font-bold text-lg">Onsite Internship</span>
+                  <span className="text-purple-700 text-sm">2 Months • Hands-on experience</span>
+                </div>
+                <div className="text-4xl font-extrabold text-purple-600 mb-2">₹1800</div>
+                <div className="text-gray-500 text-sm mb-4 text-center">Full onsite immersion with advanced curriculum, workshops, and networking.</div>
+                <ul className="text-left space-y-2 text-purple-800 w-full max-w-xs mx-auto mb-4">
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> In-person mentorship</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> 24/7 mail support</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Industry assignments</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Offer letter & certificate</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Work environment experience</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Networking opportunities</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Real-world project experience</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Basics to advanced curriculum</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Doubt session meetings</li>
+                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Free AI tools workshop</li>
+                </ul>
               </Card>
             </div>
             <div className="mt-8 text-center">
@@ -638,18 +638,6 @@ const Index = () => {
                 </form>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Assignment Policy Notice */}
-      <section className="py-6 pb-12 bg-yellow-50 border-y border-yellow-200">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center space-x-3 text-yellow-800">
-            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
-            <p className="text-center text-sm font-medium">
-              <strong>Important Notice:</strong> Regular assignment completion is mandatory. Missing assignments may result in certificate withholding and additional fees for certificate issuance.
-            </p>
           </div>
         </div>
       </section>
