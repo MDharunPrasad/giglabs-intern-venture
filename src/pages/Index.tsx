@@ -69,6 +69,46 @@ const Index = () => {
   // Progress bar - simulating 59% filled
   const progressValue = 59;
 
+  // Chat functions
+  const handleQuestionClick = (question: string) => {
+    setChatMessages(prev => [...prev, { type: 'user', message: question }]);
+    
+    // Simple bot responses based on question
+    setTimeout(() => {
+      let botResponse = '';
+      switch (question) {
+        case "What certificates will I receive?":
+          botResponse = "You'll receive an official offer letter at the start and an experience certificate upon completion of your internship.";
+          break;
+        case "How do I get the money back guarantee?":
+          botResponse = "The first 10 students to complete their internship successfully will receive a full refund as part of our money-back guarantee.";
+          break;
+        case "What resources are provided?":
+          botResponse = "You'll get access to YouTube tutorials, course materials, live Zoom sessions, and direct mentorship from industry experts.";
+          break;
+        default:
+          botResponse = "That's a great question! Please contact our support team at info@giglabs.tech for detailed information.";
+      }
+      setChatMessages(prev => [...prev, { type: 'bot', message: botResponse }]);
+    }, 1000);
+  };
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    setChatMessages(prev => [...prev, { type: 'user', message: chatInput }]);
+    setChatInput('');
+    
+    // Simple bot response
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { 
+        type: 'bot', 
+        message: "Thank you for your question! For detailed assistance, please contact us at info@giglabs.tech or call +91 824 3539291." 
+      }]);
+    }, 1000);
+  };
+
   const calculatePrice = () => {
     if (!formData.internshipMode || !formData.duration) return { base: 0, total: 0 };
     
