@@ -7,11 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, ExternalLink } from 'lucide-react';
+import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, AlertTriangle, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import Login from '@/components/Login';
+import StudentDashboard from '@/components/StudentDashboard';
+import StaffDashboard from '@/components/StaffDashboard';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, userRole, loading } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   const [formData, setFormData] = useState({
     studentName: '',
@@ -65,25 +72,27 @@ const Index = () => {
   const calculatePrice = () => {
     if (!formData.internshipMode || !formData.duration) return { base: 0, total: 0 };
     
-    const basePrice = formData.internshipMode === 'remote' ? 299 : 999;
-    const duration = parseInt(formData.duration);
-    
-    let totalPrice = basePrice;
-    for (let i = 2; i <= duration; i++) {
-      totalPrice += basePrice;
+    let basePrice = 0;
+    if (formData.internshipMode === 'remote') {
+      basePrice = formData.duration === '1' ? 499 : 899;
+    } else if (formData.internshipMode === 'in-office') {
+      basePrice = formData.duration === '1' ? 3000 : 1000; // Summer internship for 2 months
     }
     
-    // Round to nearest 10
-    const roundedTotal = Math.round(totalPrice / 10) * 10;
-    
     return {
-      base: totalPrice,
-      total: roundedTotal
+      base: basePrice,
+      total: basePrice
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    
     const pricing = calculatePrice();
     
     if (pricing.total === 0) {
@@ -95,68 +104,55 @@ const Index = () => {
       return;
     }
 
+    // Save enrollment to database
+    const { error } = await supabase
+      .from('enrollments')
+      .insert({
+        user_id: user.id,
+        student_name: formData.studentName,
+        state: formData.state,
+        phone_number: formData.phoneNumber,
+        college_name: formData.collegeName,
+        year_of_studying: formData.yearOfStudying,
+        email_id: formData.emailId,
+        secondary_email_id: formData.secondaryEmailId,
+        domain: formData.domain,
+        mode: formData.internshipMode,
+        duration: parseInt(formData.duration),
+        amount: pricing.total,
+        package_name: `${formData.internshipMode === 'remote' ? 'Remote' : 'Onsite'} ${formData.duration} Month${formData.duration === '1' ? '' : 's'}`
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit application. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Application Submitted!",
       description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
     });
   };
 
-  const handleChatSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
-    setChatMessages(prev => [...prev, { type: 'user', message: chatInput }]);
-    
-    setTimeout(() => {
-      const responses = [
-        "Thanks for your question! Our internships are designed to provide real-world experience with industry mentors.",
-        "Great question! You'll work on live projects and get direct industry exposure during your internship.",
-        "Our support team is available 24/7 to help you throughout your internship journey.",
-        "The certificate you receive is industry-recognized and will add value to your career profile.",
-        "Yes, we have tie-ups with various companies and some of our top performers get job opportunities!",
-        "Students who complete internships get interview opportunities at GigLabs!",
-        "We provide comprehensive learning resources including YouTube videos, courses, and project guidelines.",
-        "The money back guarantee applies to the first 10 students who successfully complete their internship.",
-        "You can switch between remote and in-office modes with prior approval from your mentor.",
-        "Regular assignment completion is mandatory for certificate issuance."
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setChatMessages(prev => [...prev, { type: 'bot', message: randomResponse }]);
-    }, 1000);
+  if (showLogin) {
+    return <Login />;
+  }
 
-    setChatInput('');
-  };
+  if (user && userRole === 'student') {
+    return <StudentDashboard />;
+  }
 
-  const handleQuestionClick = (question: string) => {
-    setChatMessages(prev => [...prev, { type: 'user', message: question }]);
-    
-    setTimeout(() => {
-      let response = "";
-      if (question.includes("certificates")) {
-        response = "You'll receive an official offer letter and experience certificate upon successful completion of your internship.";
-      } else if (question.includes("money back")) {
-        response = "The first 10 students who successfully complete their internship program will receive a full refund!";
-      } else if (question.includes("resources")) {
-        response = "We provide YouTube tutorial videos, coding courses, project documentation, and direct mentorship support.";
-      } else if (question.includes("interview process")) {
-        response = "Students who complete a 2-month internship get interview opportunities at GigLabs for positions in their internship domain.";
-      } else if (question.includes("switch domains")) {
-        response = "Domain switching is possible in the first week with mentor approval, subject to availability.";
-      } else if (question.includes("working hours")) {
-        response = "Flexible working hours with 4-6 hours daily commitment. In-office interns work 10 AM to 4 PM.";
-      } else {
-        response = "Yes! We provide placement support and have partnerships with various companies for job opportunities.";
-      }
-      setChatMessages(prev => [...prev, { type: 'bot', message: response }]);
-    }, 1000);
-  };
-
-  const scrollToForm = () => {
-    const element = document.getElementById('application');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  if (user && userRole === 'staff') {
+    return <StaffDashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -179,44 +175,47 @@ const Index = () => {
             <div className="mb-8 max-w-md mx-auto">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-blue-100">Applications Progress</span>
-                <span className="text-sm text-blue-100 font-semibold">{progressValue}%</span>
+                <span className="text-sm text-blue-100 font-semibold">59%</span>
               </div>
               <div className="relative h-4 bg-white/20 rounded-full overflow-hidden shadow-lg">
                 <div 
-                  className="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-2000 ease-out relative overflow-hidden" 
-                  style={{ width: `${progressValue}%` }}
+                  className="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-2000 ease-out relative overflow-hidden animate-pulse" 
+                  style={{ width: '59%' }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-300/0 via-green-300/50 to-green-300/0 animate-[shimmer_2s_ease-in-out_infinite]"></div>
                 </div>
               </div>
               <p className="text-xs text-blue-200 mt-1">Hurry up! Limited slots remaining</p>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center z-10 relative">
-              <Button
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => {
-                  const el = document.getElementById('application');
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    window.location.hash = '#application';
-                  }
-                }}
-                type="button"
-              >
-                Apply Now
-              </Button>
+              {user ? (
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => {
+                    const el = document.getElementById('application');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  Apply Now
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => setShowLogin(true)}
+                >
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Login to Apply
+                </Button>
+              )}
               <Button
                 size="lg"
                 className="bg-white text-purple-600 hover:bg-purple-50 text-lg px-8 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => {
-                  console.log('Become Campus Ambassador button clicked');
-                  navigate('/campus-ambassador');
-                }}
-                type="button"
+                onClick={() => navigate('/campus-ambassador')}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
                 Become Campus Ambassador
@@ -293,122 +292,103 @@ const Index = () => {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">Choose Your Domain</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Choose Your Program</h2>
             <p className="text-xl text-gray-600">Select from our comprehensive range of internship programs</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {domains.map((domain, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-blue-300 relative overflow-hidden">
-                <div className={`absolute top-0 left-0 right-0 h-2 ${domain.color}`}></div>
-                <CardHeader className="text-center pt-6">
-                  <domain.icon className="h-16 w-16 mx-auto mb-4 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
-                  <CardTitle className="text-xl text-gray-900">{domain.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center pb-6">
-                  <p className="text-gray-600 mb-4">{domain.description}</p>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white"
-                    onClick={() => {
-                      setFormData({...formData, domain: domain.name});
-                      scrollToForm();
-                    }}
-                  >
-                    Apply Now
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
+            {/* Remote 1 Month - ₹499 */}
+            <Card className="text-center border-2 border-blue-200 hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-blue-50">
+                <CardTitle className="text-lg">Remote Basic</CardTitle>
+                <div className="text-3xl font-bold text-blue-600">₹499</div>
+                <CardDescription>1 Month • Remote</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2 text-sm">
+                  <li>✓ Online mentorship</li>
+                  <li>✓ Basic curriculum</li>
+                  <li>✓ Certificate</li>
+                  <li>✓ 24/7 support</li>
+                </ul>
+              </CardContent>
+            </Card>
 
-          {/* Pricing Info */}
-          <div className="mt-16 max-w-6xl mx-auto">
-            <h3 className="text-3xl font-bold text-center mb-8 text-gray-900">Flexible Duration & Pricing</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 items-stretch">
-              {/* 1 Month Remote */}
-              <Card className="flex flex-col items-center border-2 border-blue-200 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
-                <div className="flex flex-col items-center mb-4">
-                  <svg className="h-12 w-12 text-blue-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>
-                  <span className="text-blue-900 font-bold text-lg">Remote Internship</span>
-                  <span className="text-blue-700 text-sm">1 Month • Work from anywhere</span>
-                </div>
-                <div className="text-4xl font-extrabold text-blue-600 mb-2">₹299</div>
-                <div className="text-gray-500 text-sm mb-4 text-center">Best for those who want a quick, flexible remote experience.</div>
-                <ul className="text-left space-y-2 text-blue-800 w-full max-w-xs mx-auto mb-4">
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Online mentorship</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> 24/7 mail support</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Industry assignments</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Offer letter & certificate</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Real-world project experience</li>
+            {/* Remote 2 Month - ₹899 */}
+            <Card className="text-center border-2 border-blue-400 hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-blue-100">
+                <CardTitle className="text-lg">Remote Advanced</CardTitle>
+                <div className="text-3xl font-bold text-blue-600">₹899</div>
+                <CardDescription>2 Months • Remote</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2 text-sm">
+                  <li>✓ Online mentorship</li>
+                  <li>✓ Advanced curriculum</li>
+                  <li>✓ Certificate</li>
+                  <li>✓ AI tools workshop</li>
+                  <li>✓ Doubt sessions</li>
                 </ul>
-              </Card>
-              {/* 2 Month Remote */}
-              <Card className="flex flex-col items-center border-2 border-blue-400 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
-                <div className="flex flex-col items-center mb-4">
-                  <svg className="h-12 w-12 text-blue-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>
-                  <span className="text-blue-900 font-bold text-lg">Remote Internship</span>
-                  <span className="text-blue-700 text-sm">2 Months • Work from anywhere</span>
-                </div>
-                <div className="text-4xl font-extrabold text-blue-600 mb-2">₹500</div>
-                <div className="text-gray-500 text-sm mb-4 text-center">Extended remote learning with advanced curriculum and workshops.</div>
-                <ul className="text-left space-y-2 text-blue-800 w-full max-w-xs mx-auto mb-4">
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Online mentorship</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> 24/7 mail support</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Industry assignments</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Offer letter & certificate</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Real-world project experience</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Basics to advanced curriculum</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Doubt session meetings</li>
-                  <li className="flex items-center gap-2"><span className="text-blue-500">✔</span> Free AI tools workshop</li>
+              </CardContent>
+            </Card>
+
+            {/* Summer Internship - ₹1000 */}
+            <Card className="text-center border-2 border-green-400 hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-green-100">
+                <CardTitle className="text-lg">Summer Special</CardTitle>
+                <div className="text-3xl font-bold text-green-600">₹1000</div>
+                <CardDescription>2 Months • Onsite</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2 text-sm">
+                  <li>✓ In-person mentorship</li>
+                  <li>✓ Full curriculum</li>
+                  <li>✓ Work experience</li>
+                  <li>✓ Networking</li>
+                  <li>✓ Certificate</li>
                 </ul>
-              </Card>
-              {/* 1 Month Onsite */}
-              <Card className="flex flex-col items-center border-2 border-purple-200 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
-                <div className="flex flex-col items-center mb-4">
-                  <svg className="h-12 w-12 text-purple-500 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /></svg>
-                  <span className="text-purple-900 font-bold text-lg">Onsite Internship</span>
-                  <span className="text-purple-700 text-sm">1 Month • Hands-on experience</span>
-                </div>
-                <div className="text-4xl font-extrabold text-purple-600 mb-2">₹999</div>
-                <div className="text-gray-500 text-sm mb-4 text-center">Experience real office culture, mentorship, and networking in person.</div>
-                <ul className="text-left space-y-2 text-purple-800 w-full max-w-xs mx-auto mb-4">
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> In-person mentorship</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> 24/7 mail support</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Industry assignments</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Offer letter & certificate</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Work environment experience</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Networking opportunities</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-500">✔</span> Real-world project experience</li>
+              </CardContent>
+            </Card>
+
+            {/* Onsite 1 Month - ₹3000 */}
+            <Card className="text-center border-2 border-purple-400 hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-purple-100">
+                <CardTitle className="text-lg">Onsite Premium</CardTitle>
+                <div className="text-3xl font-bold text-purple-600">₹3000</div>
+                <CardDescription>1 Month • Onsite</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2 text-sm">
+                  <li>✓ In-person mentorship</li>
+                  <li>✓ Intensive training</li>
+                  <li>✓ Real projects</li>
+                  <li>✓ Certificate</li>
+                  <li>✓ Job referrals</li>
                 </ul>
-              </Card>
-              {/* 2 Month Onsite */}
-              <Card className="flex flex-col items-center border-2 border-purple-400 bg-white rounded-2xl shadow-lg px-8 py-10 min-w-[260px] max-w-[320px] h-full transition-all duration-300 hover:shadow-2xl">
-                <div className="flex flex-col items-center mb-4">
-                  <svg className="h-12 w-12 text-purple-600 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /></svg>
-                  <span className="text-purple-900 font-bold text-lg">Onsite Internship</span>
-                  <span className="text-purple-700 text-sm">2 Months • Hands-on experience</span>
-                </div>
-                <div className="text-4xl font-extrabold text-purple-600 mb-2">₹1800</div>
-                <div className="text-gray-500 text-sm mb-4 text-center">Full onsite immersion with advanced curriculum, workshops, and networking.</div>
-                <ul className="text-left space-y-2 text-purple-800 w-full max-w-xs mx-auto mb-4">
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> In-person mentorship</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> 24/7 mail support</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Industry assignments</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Offer letter & certificate</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Work environment experience</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Networking opportunities</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Real-world project experience</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Basics to advanced curriculum</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Doubt session meetings</li>
-                  <li className="flex items-center gap-2"><span className="text-purple-600">✔</span> Free AI tools workshop</li>
+              </CardContent>
+            </Card>
+
+            {/* Elite Package - ₹5000 */}
+            <Card className="text-center border-2 border-gold-400 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-1 text-xs font-bold">
+                MOST POPULAR
+              </div>
+              <CardHeader className="bg-gradient-to-br from-yellow-50 to-orange-50 pt-8">
+                <CardTitle className="text-lg">Elite Package</CardTitle>
+                <div className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">₹5000</div>
+                <CardDescription>Complete Program</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2 text-sm">
+                  <li>✓ All remote benefits</li>
+                  <li>✓ Direct interview at GigLabs</li>
+                  <li>✓ Job placement support</li>
+                  <li>✓ Stipend opportunity</li>
+                  <li>✓ Premium certificate</li>
+                  <li>✓ 1-on-1 mentoring</li>
                 </ul>
-              </Card>
-            </div>
-            <div className="mt-8 text-center">
-              <Badge className="bg-green-100 text-green-800 text-lg px-6 py-2">
-                All internships include assignments and tasks. Only 1 or 2 month plans available.
-              </Badge>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -442,202 +422,195 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Application Form */}
+      {/* Application Form - Updated to require login */}
       <section id="application" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Apply Now</h2>
               <p className="text-xl text-gray-600">Take the first step towards your dream career</p>
+              {!user && (
+                <div className="mt-6">
+                  <Button 
+                    onClick={() => setShowLogin(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg"
+                  >
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Login Required to Apply
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <Card className="shadow-xl border-2 border-blue-100">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-                <CardTitle className="text-2xl text-center">Internship Application</CardTitle>
-              </CardHeader>
-              <CardContent className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="studentName">Student Name *</Label>
-                      <Input
-                        id="studentName"
-                        required
-                        value={formData.studentName}
-                        onChange={(e) => setFormData({...formData, studentName: e.target.value})}
-                        className="mt-2"
-                      />
+            {user && (
+              <Card className="shadow-xl border-2 border-blue-100">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+                  <CardTitle className="text-2xl text-center">Internship Application</CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="studentName">Student Name *</Label>
+                        <Input
+                          id="studentName"
+                          required
+                          value={formData.studentName}
+                          onChange={(e) => setFormData({...formData, studentName: e.target.value})}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State *</Label>
+                        <Select value={formData.state} onValueChange={(value) => setFormData({...formData, state: value})}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select your state" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {indianStates.map((state) => (
+                              <SelectItem key={state} value={state}>
+                                {state}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="phoneNumber">Phone Number *</Label>
+                        <Input
+                          id="phoneNumber"
+                          type="tel"
+                          required
+                          value={formData.phoneNumber}
+                          onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="collegeName">College Name *</Label>
+                        <Input
+                          id="collegeName"
+                          required
+                          value={formData.collegeName}
+                          onChange={(e) => setFormData({...formData, collegeName: e.target.value})}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <Label htmlFor="state">State *</Label>
-                      <Select value={formData.state} onValueChange={(value) => setFormData({...formData, state: value})}>
+                      <Label htmlFor="yearOfStudying">Year of Studying *</Label>
+                      <Select onValueChange={(value) => setFormData({...formData, yearOfStudying: value})}>
                         <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select your state" />
+                          <SelectValue placeholder="Select your year" />
                         </SelectTrigger>
                         <SelectContent>
-                          {indianStates.map((state) => (
-                            <SelectItem key={state} value={state}>
-                              {state}
+                          <SelectItem value="1st">1st Year</SelectItem>
+                          <SelectItem value="2nd">2nd Year</SelectItem>
+                          <SelectItem value="3rd">3rd Year</SelectItem>
+                          <SelectItem value="4th">4th Year</SelectItem>
+                          <SelectItem value="graduate">Graduate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="emailId">Email ID *</Label>
+                        <Input
+                          id="emailId"
+                          type="email"
+                          required
+                          value={formData.emailId}
+                          onChange={(e) => setFormData({...formData, emailId: e.target.value})}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="secondaryEmailId">Secondary Email ID</Label>
+                        <Input
+                          id="secondaryEmailId"
+                          type="email"
+                          value={formData.secondaryEmailId}
+                          onChange={(e) => setFormData({...formData, secondaryEmailId: e.target.value})}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="domain">Internship Domain *</Label>
+                      <Select value={formData.domain} onValueChange={(value) => setFormData({...formData, domain: value})}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select your domain" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {domains.map((domain) => (
+                            <SelectItem key={domain.name} value={domain.name}>
+                              {domain.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="phoneNumber">Phone Number *</Label>
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        required
-                        value={formData.phoneNumber}
-                        onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                        className="mt-2"
-                      />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="internshipMode">Internship Mode *</Label>
+                        <Select onValueChange={(value) => setFormData({...formData, internshipMode: value})}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select mode" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="remote">Remote</SelectItem>
+                            <SelectItem value="in-office">In-Office</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="duration">Duration *</Label>
+                        <Select onValueChange={(value) => setFormData({...formData, duration: value})}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select duration" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1 Month</SelectItem>
+                            <SelectItem value="2">2 Months</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="collegeName">College Name *</Label>
-                      <Input
-                        id="collegeName"
-                        required
-                        value={formData.collegeName}
-                        onChange={(e) => setFormData({...formData, collegeName: e.target.value})}
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="yearOfStudying">Year of Studying *</Label>
-                    <Select onValueChange={(value) => setFormData({...formData, yearOfStudying: value})}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select your year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1st">1st Year</SelectItem>
-                        <SelectItem value="2nd">2nd Year</SelectItem>
-                        <SelectItem value="3rd">3rd Year</SelectItem>
-                        <SelectItem value="4th">4th Year</SelectItem>
-                        <SelectItem value="graduate">Graduate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="emailId">Email ID *</Label>
-                      <Input
-                        id="emailId"
-                        type="email"
-                        required
-                        value={formData.emailId}
-                        onChange={(e) => setFormData({...formData, emailId: e.target.value})}
-                        className="mt-2"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="secondaryEmailId">Secondary Email ID</Label>
-                      <Input
-                        id="secondaryEmailId"
-                        type="email"
-                        value={formData.secondaryEmailId}
-                        onChange={(e) => setFormData({...formData, secondaryEmailId: e.target.value})}
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="domain">Internship Domain *</Label>
-                    <Select value={formData.domain} onValueChange={(value) => setFormData({...formData, domain: value})}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select your domain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {domains.map((domain) => (
-                          <SelectItem key={domain.name} value={domain.name}>
-                            {domain.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="internshipMode">Internship Mode *</Label>
-                      <Select onValueChange={(value) => setFormData({...formData, internshipMode: value})}>
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select mode" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="remote">Remote</SelectItem>
-                          <SelectItem value="in-office">In-Office</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="duration">Duration *</Label>
-                      <Select onValueChange={(value) => setFormData({...formData, duration: value})}>
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select duration" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 Month</SelectItem>
-                          <SelectItem value="2">2 Months</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {formData.internshipMode && formData.duration && (
-                    <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
-                      <CardContent className="p-6">
-                        <div className="text-center">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Details</h3>
-                          <div className="flex justify-between text-2xl font-bold text-green-600 mb-6">
-                            <span>Total Amount:</span>
-                            <span>₹{calculatePrice().total}</span>
+                    {formData.internshipMode && formData.duration && (
+                      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
+                        <CardContent className="p-6">
+                          <div className="text-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Details</h3>
+                            <div className="flex justify-between text-2xl font-bold text-green-600 mb-6">
+                              <span>Total Amount:</span>
+                              <span>₹{calculatePrice().total}</span>
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              Mode: {formData.internshipMode} • Duration: {formData.duration} month(s)
+                            </p>
                           </div>
-                          <div className="flex justify-center space-x-4 mb-4">
-                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
-                              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">G</span>
-                              </div>
-                              <span className="text-sm font-medium">Google Pay</span>
-                            </div>
-                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
-                              <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">A</span>
-                              </div>
-                              <span className="text-sm font-medium">Amazon Pay</span>
-                            </div>
-                            <div className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow border">
-                              <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">U</span>
-                              </div>
-                              <span className="text-sm font-medium">UPI</span>
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            Mode: {formData.internshipMode} • Duration: {formData.duration} month(s)
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                        </CardContent>
+                      </Card>
+                    )}
 
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
-                  >
-                    Submit Application
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 text-white py-3 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300"
+                    >
+                      Submit Application
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </section>
