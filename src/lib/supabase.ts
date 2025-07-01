@@ -1,18 +1,12 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
+const supabaseUrl = 'https://nuwdjlippuptgppbwtjv.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51d2RqbGlwcHVwdGdwcGJ3dGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzODczNDMsImV4cCI6MjA2Njk2MzM0M30.lT82kYpkoYSw7hUPlsvB19kAm3gXpJkmysOp2obPg-0'
 
-// Create a fallback client that won't cause errors
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  }
-})
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Helper to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
-  return import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+  return true // Now properly configured
 }
