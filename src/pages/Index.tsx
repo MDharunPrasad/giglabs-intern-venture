@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/components/Login';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { CheckCircle, Clock, Play, Upload, Calendar, Users, Award, User, LogOut, Star, MessageCircle, Code, Palette, Brain, Database, Monitor } from 'lucide-react';
+import { CheckCircle, Clock, Play, Upload, Calendar, Users, Award, User, LogOut, Star, MessageCircle, Code, Palette, Brain, Database, Monitor, ArrowLeft } from 'lucide-react';
 
 const Index = () => {
   const { user, userRole, signOut } = useAuth();
@@ -75,8 +75,17 @@ const Index = () => {
     "Is there any placement support?"
   ];
 
+  // Auto-close profile panel when user logs in successfully
+  useEffect(() => {
+    if (user && showLogin) {
+      setShowLogin(false);
+      setShowProfile(true);
+      setTimeout(() => setShowProfile(false), 3000); // Auto close after 3 seconds
+    }
+  }, [user, showLogin]);
+
   if (showLogin) {
-    return <Login />;
+    return <Login onClose={() => setShowLogin(false)} />;
   }
 
   const handleEnroll = (packageName: string, price: number) => {
@@ -309,9 +318,13 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
+        <div className="container mx-auto px-4 text-center relative">
           <div className="mb-8">
+            <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full mb-6">
+              <span className="text-sm font-semibold text-gray-700">🚀 LMS + Internship Platform - A New Revolution</span>
+            </div>
             <h1 className="text-5xl font-bold text-gray-900 mb-6">
               Launch Your Tech Career with
               <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -319,22 +332,26 @@ const Index = () => {
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Get real-world experience, build industry-ready projects, and receive certificates that matter. 
-              Join thousands of students who've accelerated their careers with GigLabs.
+              Experience our revolutionary LMS + Internship platform. Get real-world experience, build industry-ready projects, 
+              and receive certificates that matter. Join thousands of students who've accelerated their careers with GigLabs.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-              <Badge className="bg-green-100 text-green-800 px-4 py-2">
+              <Badge className="bg-green-100 text-green-800 px-4 py-2 text-sm">
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Money Back Guarantee
               </Badge>
-              <Badge className="bg-blue-100 text-blue-800 px-4 py-2">
+              <Badge className="bg-blue-100 text-blue-800 px-4 py-2 text-sm">
                 <Award className="h-4 w-4 mr-2" />
                 Industry Certificates
               </Badge>
-              <Badge className="bg-purple-100 text-purple-800 px-4 py-2">
+              <Badge className="bg-purple-100 text-purple-800 px-4 py-2 text-sm">
                 <Users className="h-4 w-4 mr-2" />
                 Expert Mentorship
+              </Badge>
+              <Badge className="bg-orange-100 text-orange-800 px-4 py-2 text-sm">
+                <Star className="h-4 w-4 mr-2" />
+                6-Module Journey
               </Badge>
             </div>
           </div>
@@ -342,20 +359,21 @@ const Index = () => {
       </section>
 
       {/* Internship Packages */}
-      <section className="py-20">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Internship Programs
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choose from our comprehensive internship packages designed to accelerate your career growth
+              Choose from our comprehensive 6-module internship packages designed to accelerate your career growth
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {packages.map((pkg, index) => (
-              <div key={index} className={`bg-white rounded-xl shadow-lg border p-8 hover:shadow-xl transition-all duration-300 ${
+          {/* First row - 3 cards */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
+            {packages.slice(0, 3).map((pkg, index) => (
+              <div key={index} className={`bg-white rounded-xl shadow-lg border p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 ${
                 pkg.price === 899 ? 'border-2 border-purple-500 relative' : 'border-gray-200'
               }`}>
                 {pkg.price === 899 && (
@@ -383,7 +401,7 @@ const Index = () => {
                         pkg.price === 1000 ? 'bg-orange-600' :
                         pkg.price === 3000 ? 'bg-green-600' : 'bg-red-600'
                       }`}></div>
-                      {pkg.modules} modules
+                      6 modules (including offer letter)
                     </li>
                     <li className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-3 ${
@@ -436,6 +454,75 @@ const Index = () => {
               </div>
             ))}
           </div>
+
+          {/* Second row - 2 cards centered */}
+          <div className="flex justify-center">
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl">
+              {packages.slice(3).map((pkg, index) => (
+                <div key={index + 3} className={`bg-white rounded-xl shadow-lg border p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 ${
+                  pkg.price === 5000 ? 'border-2 border-red-500 relative' : 'border-gray-200'
+                }`}>
+                  {pkg.price === 5000 && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                        Elite Program
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
+                    <div className={`text-4xl font-bold mb-4 ${
+                      pkg.price === 3000 ? 'text-green-600' : 'text-red-600'
+                    }`}>₹{pkg.price}</div>
+                    <p className="text-gray-600 mb-6">{pkg.duration} • {pkg.type}</p>
+                    
+                    <ul className="text-left space-y-3 mb-8">
+                      <li className="flex items-center">
+                        <div className={`w-2 h-2 rounded-full mr-3 ${
+                          pkg.price === 3000 ? 'bg-green-600' : 'bg-red-600'
+                        }`}></div>
+                        6 modules (including offer letter)
+                      </li>
+                      <li className="flex items-center">
+                        <div className={`w-2 h-2 rounded-full mr-3 ${
+                          pkg.price === 3000 ? 'bg-green-600' : 'bg-red-600'
+                        }`}></div>
+                        {pkg.type} internship
+                      </li>
+                      <li className="flex items-center">
+                        <div className={`w-2 h-2 rounded-full mr-3 ${
+                          pkg.price === 3000 ? 'bg-green-600' : 'bg-red-600'
+                        }`}></div>
+                        Certificate included
+                      </li>
+                      <li className="flex items-center">
+                        <div className={`w-2 h-2 rounded-full mr-3 ${
+                          pkg.price === 3000 ? 'bg-green-600' : 'bg-red-600'
+                        }`}></div>
+                        Mentor support
+                      </li>
+                      {pkg.benefits && (
+                        <li className="flex items-center">
+                          <div className="w-2 h-2 bg-red-600 rounded-full mr-3"></div>
+                          {pkg.benefits}
+                        </li>
+                      )}
+                    </ul>
+                    
+                    <Button
+                      onClick={() => handleEnroll(pkg.name, pkg.price)}
+                      className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${
+                        pkg.price === 3000 ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' :
+                        'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
+                      }`}
+                    >
+                      {enrolledPackage === pkg.name ? 'Enrolled' : 'Apply Now'}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -443,7 +530,7 @@ const Index = () => {
       {user && userRole === 'student' && enrolledPackage && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Your Learning Journey</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Your 6-Module Learning Journey</h2>
             
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-between mb-8">
@@ -451,51 +538,63 @@ const Index = () => {
                   <Award className="h-6 w-6 text-yellow-600" />
                   <span className="font-medium">Enrolled in: {enrolledPackage}</span>
                 </div>
-                <Badge variant="secondary">Module {currentModule} of {packages.find(p => p.name === enrolledPackage)?.modules}</Badge>
+                <Badge variant="secondary">Module {currentModule} of 6</Badge>
               </div>
 
-              <div className="grid gap-6">
+              {/* Progress Timeline */}
+              <div className="relative mb-8">
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                <div 
+                  className="absolute left-6 top-0 w-0.5 bg-gradient-to-b from-blue-500 to-purple-500 transition-all duration-1000"
+                  style={{ height: `${(Object.keys(moduleProgress).length / 6) * 100}%` }}
+                ></div>
+              </div>
+
+              <div className="space-y-6">
                 {/* Offer Letter */}
-                <Card className={`${moduleProgress[0] ? 'bg-green-50 border-green-200' : currentModule === 1 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                  <CardHeader>
+                <Card className={`relative ${moduleProgress[0] ? 'bg-green-50 border-green-200' : currentModule === 1 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-blue-500 z-10"></div>
+                  <CardHeader className="pl-12">
                     <CardTitle className="flex items-center space-x-2">
                       {moduleProgress[0] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
-                      <span>Offer Letter</span>
+                      <span>📄 Offer Letter</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Welcome to your internship journey!</p>
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Welcome to your internship journey! Your official offer letter awaits.</p>
                     {currentModule === 1 && !moduleProgress[0] && (
-                      <Button onClick={() => completeModule(0)} size="sm">
+                      <Button onClick={() => completeModule(0)} size="sm" className="bg-gradient-to-r from-blue-500 to-purple-500">
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Mark Complete
+                        Accept Offer Letter
                       </Button>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Module 1 */}
-                <Card className={`${moduleProgress[1] ? 'bg-green-50 border-green-200' : currentModule === 2 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                  <CardHeader>
+                <Card className={`relative ${moduleProgress[1] ? 'bg-green-50 border-green-200' : currentModule === 2 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-blue-500 z-10"></div>
+                  <CardHeader className="pl-12">
                     <CardTitle className="flex items-center space-x-2">
                       {moduleProgress[1] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
-                      <span>Module 1: Foundations</span>
+                      <span>🏗️ Module 1: Foundations</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Learn the fundamentals with hands-on assignments</p>
-                    <div className="space-y-2 mb-4">
-                      <Button variant="outline" size="sm">
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Learn the fundamentals with hands-on assignments, screenshots, and video tutorials</p>
+                    <div className="space-y-3 mb-4">
+                      <Button variant="outline" size="sm" className="w-full justify-start">
                         <Play className="h-4 w-4 mr-2" />
-                        Watch Tutorial
+                        Watch How-to Video Tutorial
                       </Button>
                       <div className="grid grid-cols-2 gap-2">
-                        <Input placeholder="GitHub Link" className="text-sm" />
-                        <Input placeholder="Hosted Link" className="text-sm" />
+                        <Input placeholder="GitHub Repository Link" className="text-sm" />
+                        <Input placeholder="Hosted Project Link" className="text-sm" />
                       </div>
+                      <Textarea placeholder="Describe your assignment and attach screenshots..." className="text-sm" rows={3} />
                     </div>
                     {currentModule === 2 && !moduleProgress[1] && (
-                      <Button onClick={() => completeModule(1)} size="sm">
+                      <Button onClick={() => completeModule(1)} size="sm" className="bg-gradient-to-r from-green-500 to-teal-500">
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Submit Assignment
                       </Button>
@@ -504,87 +603,139 @@ const Index = () => {
                 </Card>
 
                 {/* Module 2 */}
-                <Card className={`${moduleProgress[2] ? 'bg-green-50 border-green-200' : currentModule === 3 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                  <CardHeader>
+                <Card className={`relative ${moduleProgress[2] ? 'bg-green-50 border-green-200' : currentModule === 3 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-purple-500 z-10"></div>
+                  <CardHeader className="pl-12">
                     <CardTitle className="flex items-center space-x-2">
                       {moduleProgress[2] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
-                      <span>Module 2: Intermediate Skills</span>
+                      <span>⚡ Module 2: Intermediate Skills (Week 2)</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Week 2: Advanced concepts with quiz and assignment</p>
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Advanced concepts unlocked! Complete quiz and assignment to progress.</p>
                     {currentModule >= 3 && (
-                      <div className="space-y-2 mb-4">
-                        <Button variant="outline" size="sm">Take Quiz</Button>
-                        <Textarea placeholder="Assignment submission..." className="text-sm" />
+                      <div className="space-y-3 mb-4">
+                        <Button variant="outline" size="sm" className="w-full justify-start">
+                          🧠 Take Interactive Quiz
+                        </Button>
+                        <Textarea placeholder="Assignment submission with detailed explanations..." className="text-sm" rows={3} />
                       </div>
                     )}
                     {currentModule === 3 && !moduleProgress[2] && (
-                      <Button onClick={() => completeModule(2)} size="sm">
+                      <Button onClick={() => completeModule(2)} size="sm" className="bg-gradient-to-r from-purple-500 to-pink-500">
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Complete Module
+                        Complete Module 2
                       </Button>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Module 3 & 4 */}
-                <Card className={`${moduleProgress[3] ? 'bg-green-50 border-green-200' : currentModule === 4 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                  <CardHeader>
+                {/* Module 3 */}
+                <Card className={`relative ${moduleProgress[3] ? 'bg-green-50 border-green-200' : currentModule === 4 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-orange-500 z-10"></div>
+                  <CardHeader className="pl-12">
                     <CardTitle className="flex items-center space-x-2">
                       {moduleProgress[3] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
-                      <span>Module 3: Project Phase 1</span>
+                      <span>🚀 Module 3: Project Phase 1 (Week 3)</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Week 3: Build your first real project</p>
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Build your first real-world project with guidance and mentorship</p>
+                    {currentModule >= 4 && (
+                      <div className="space-y-3 mb-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="Project GitHub Link" className="text-sm" />
+                          <Input placeholder="Live Demo Link" className="text-sm" />
+                        </div>
+                        <Textarea placeholder="Project description and key features implemented..." className="text-sm" rows={3} />
+                      </div>
+                    )}
                     {currentModule === 4 && !moduleProgress[3] && (
-                      <Button onClick={() => completeModule(3)} size="sm">
+                      <Button onClick={() => completeModule(3)} size="sm" className="bg-gradient-to-r from-orange-500 to-red-500">
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Submit Project
+                        Submit Project Phase 1
                       </Button>
                     )}
                   </CardContent>
                 </Card>
 
-                <Card className={`${moduleProgress[4] ? 'bg-green-50 border-green-200' : currentModule === 5 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`}>
-                  <CardHeader>
+                {/* Module 4 */}
+                <Card className={`relative ${moduleProgress[4] ? 'bg-green-50 border-green-200' : currentModule === 5 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-green-500 z-10"></div>
+                  <CardHeader className="pl-12">
                     <CardTitle className="flex items-center space-x-2">
                       {moduleProgress[4] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
-                      <span>Module 4: Project Phase 2</span>
+                      <span>✨ Module 4: Project Phase 2 (Week 4)</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">Week 4: Complete and deploy your project</p>
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Complete and deploy your project with advanced features</p>
+                    {currentModule >= 5 && (
+                      <div className="space-y-3 mb-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="Final GitHub Repository" className="text-sm" />
+                          <Input placeholder="Production Deployment Link" className="text-sm" />
+                        </div>
+                        <Textarea placeholder="Final project report and reflection..." className="text-sm" rows={3} />
+                      </div>
+                    )}
                     {currentModule === 5 && !moduleProgress[4] && (
-                      <Button onClick={() => completeModule(4)} size="sm">
+                      <Button onClick={() => completeModule(4)} size="sm" className="bg-gradient-to-r from-green-500 to-teal-500">
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Final Submission
+                        Final Project Submission
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Module 5 */}
+                <Card className={`relative ${moduleProgress[5] ? 'bg-green-50 border-green-200' : currentModule === 6 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'} transition-all duration-300`}>
+                  <div className="absolute left-4 top-6 w-4 h-4 bg-white rounded-full border-4 border-yellow-500 z-10"></div>
+                  <CardHeader className="pl-12">
+                    <CardTitle className="flex items-center space-x-2">
+                      {moduleProgress[5] ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5" />}
+                      <span>🎯 Module 5: Professional Presentation</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pl-12">
+                    <p className="text-sm text-muted-foreground mb-4">Present your work and prepare for industry readiness</p>
+                    {currentModule === 6 && !moduleProgress[5] && (
+                      <Button onClick={() => completeModule(5)} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Complete Presentation
                       </Button>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Certificate */}
-                {Object.keys(moduleProgress).length >= 4 && (
-                  <Card className="bg-yellow-50 border-yellow-200">
-                    <CardHeader>
+                {Object.keys(moduleProgress).length >= 6 && (
+                  <Card className="relative bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 shadow-xl">
+                    <div className="absolute left-4 top-6 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full z-10"></div>
+                    <CardHeader className="pl-12">
                       <CardTitle className="flex items-center space-x-2">
-                        <Award className="h-5 w-5 text-yellow-600" />
-                        <span>Internship Certificate</span>
+                        <Award className="h-6 w-6 text-yellow-600" />
+                        <span>🏆 Internship Certificate</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="bg-white p-6 rounded-lg border-2 border-yellow-400">
+                    <CardContent className="pl-12">
+                      <div className="bg-white p-8 rounded-lg border-2 border-yellow-400 shadow-inner">
                         <div className="text-center">
-                          <h3 className="text-2xl font-bold mb-4">Certificate of Completion</h3>
-                          <p className="mb-2">This is to certify that</p>
-                          <p className="text-xl font-bold text-blue-600 mb-2">{user.name}</p>
-                          <p className="mb-2">has successfully completed the</p>
-                          <p className="text-lg font-semibold mb-2">{enrolledPackage}</p>
-                          <p className="mb-4">at GigLabs ({packages.find(p => p.name === enrolledPackage)?.type} internship)</p>
-                          <div className="flex justify-center">
-                            <Award className="h-8 w-8 text-yellow-600" />
+                          <div className="mb-4">
+                            <Award className="h-16 w-16 text-yellow-600 mx-auto mb-2" />
+                            <h3 className="text-3xl font-bold text-gray-800 mb-2">Certificate of Completion</h3>
+                          </div>
+                          <p className="text-lg mb-2">This is to certify that</p>
+                          <p className="text-2xl font-bold text-blue-600 mb-3">{user.name}</p>
+                          <p className="text-lg mb-2">has successfully completed the</p>
+                          <p className="text-xl font-semibold text-purple-600 mb-3">{enrolledPackage}</p>
+                          <p className="text-lg mb-4">
+                            at <span className="font-bold text-gray-800">GigLabs</span> 
+                            <br />
+                            <span className="text-base">({packages.find(p => p.name === enrolledPackage)?.type} internship)</span>
+                          </p>
+                          <div className="border-t border-gray-300 pt-4 mt-4">
+                            <p className="text-sm text-gray-600">Successfully completed all 6 modules with excellence</p>
                           </div>
                         </div>
                       </div>

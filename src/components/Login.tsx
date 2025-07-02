@@ -7,8 +7,13 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { ArrowLeft, User, Mail, Lock, UserCheck } from 'lucide-react';
 
-const Login = () => {
+interface LoginProps {
+  onClose: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,86 +52,127 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-          <CardTitle className="text-2xl">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 relative">
+      {/* Back Button */}
+      <Button
+        variant="outline"
+        onClick={onClose}
+        className="absolute top-6 left-6 flex items-center space-x-2 hover:bg-white/80 backdrop-blur-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back to Home</span>
+      </Button>
+
+      <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden">
+        <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+              <User className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold">
+            {isLogin ? 'Welcome Back!' : 'Join GigLabs'}
           </CardTitle>
-          <CardDescription className="text-blue-100">
-            {isLogin ? 'Sign in to your account' : 'Join GigLabs today'}
+          <CardDescription className="text-blue-100 text-lg">
+            {isLogin ? 'Sign in to continue your journey' : 'Start your tech career today'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
-              <div>
-                <Label htmlFor="name">Full Name</Label>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium flex items-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>Full Name</span>
+                </Label>
                 <Input
                   id="name"
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1"
+                  className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                  placeholder="Enter your full name"
                 />
               </div>
             )}
             
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium flex items-center space-x-2">
+                <Mail className="h-4 w-4" />
+                <span>Email Address</span>
+              </Label>
               <Input
                 id="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
+                className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                placeholder="Enter your email"
               />
             </div>
             
-            <div>
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium flex items-center space-x-2">
+                <Lock className="h-4 w-4" />
+                <span>Password</span>
+              </Label>
               <Input
                 id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
+                className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                placeholder="Enter your password"
               />
             </div>
             
-            <div>
-              <Label>I am a:</Label>
-              <RadioGroup value={role} onValueChange={(value) => setRole(value as 'student' | 'staff')} className="mt-2">
-                <div className="flex items-center space-x-2">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium flex items-center space-x-2">
+                <UserCheck className="h-4 w-4" />
+                <span>I am a:</span>
+              </Label>
+              <RadioGroup 
+                value={role} 
+                onValueChange={(value) => setRole(value as 'student' | 'staff')} 
+                className="grid grid-cols-2 gap-4"
+              >
+                <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                   <RadioGroupItem value="student" id="student" />
-                  <Label htmlFor="student">Student</Label>
+                  <Label htmlFor="student" className="font-medium cursor-pointer">🎓 Student</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                   <RadioGroupItem value="staff" id="staff" />
-                  <Label htmlFor="staff">Staff</Label>
+                  <Label htmlFor="staff" className="font-medium cursor-pointer">👨‍🏫 Staff</Label>
                 </div>
               </RadioGroup>
             </div>
             
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
               disabled={loading}
             >
-              {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Please wait...</span>
+                </div>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <Button
               variant="link"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600"
+              className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              {isLogin ? "Don't have an account? Sign up here" : "Already have an account? Sign in here"}
             </Button>
           </div>
         </CardContent>
