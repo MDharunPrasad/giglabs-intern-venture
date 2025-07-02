@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,17 +6,34 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { MessageCircle, CheckCircle, Star, Users, Award, Zap, Globe, Code, Palette, Brain, Database, Monitor, BookOpen, UserPlus, Phone, Mail, MapPin, ExternalLink, LogIn, User, Calendar, Clock, Video, Play, Upload, FileText, ArrowLeft, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/components/Login';
-import StudentDashboard from '@/components/StudentDashboard';
-import StaffDashboard from '@/components/StaffDashboard';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, loading, signOut } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [enrollment, setEnrollment] = useState(null);
+  const [modules, setModules] = useState([]);
+  const [currentModule, setCurrentModule] = useState(null);
+  const [githubLink, setGithubLink] = useState('');
+  const [hostingLink, setHostingLink] = useState('');
+  const [submissionText, setSubmissionText] = useState('');
+  const [meetings, setMeetings] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [newMeeting, setNewMeeting] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    meetingLink: ''
+  });
+  const [showCreateMeeting, setShowCreateMeeting] = useState(false);
 
   const [formData, setFormData] = useState({
     studentName: '',
@@ -120,6 +137,91 @@ const Index = () => {
     };
   };
 
+  const defaultModules = [
+    {
+      id: 1,
+      title: 'Offer Letter & Welcome',
+      description: 'Download your official offer letter and get started with your internship',
+      week: 1,
+      status: 'available',
+      type: 'offer_letter'
+    },
+    {
+      id: 2,
+      title: 'Module 1: Foundation',
+      description: 'Learn the basics of your chosen domain with hands-on assignments',
+      week: 1,
+      status: 'locked',
+      type: 'assignment',
+      videoUrl: 'https://youtube.com/watch?v=example',
+      assignmentDescription: 'Create a basic project demonstrating fundamental concepts',
+      githubRequired: true,
+      hostingRequired: true
+    },
+    {
+      id: 3,
+      title: 'Module 2: Intermediate Concepts',
+      description: 'Dive deeper into advanced topics with practical implementation',
+      week: 2,
+      status: 'locked',
+      type: 'assignment',
+      videoUrl: 'https://youtube.com/watch?v=example2',
+      assignmentDescription: 'Build upon your foundation project with advanced features',
+      githubRequired: true,
+      hostingRequired: true
+    },
+    {
+      id: 4,
+      title: 'Module 3: Project Phase 1',
+      description: 'Start working on your capstone project',
+      week: 3,
+      status: 'locked',
+      type: 'project',
+      videoUrl: 'https://youtube.com/watch?v=example3',
+      assignmentDescription: 'Plan and implement the first phase of your final project',
+      githubRequired: true,
+      hostingRequired: true
+    },
+    {
+      id: 5,
+      title: 'Module 4: Project Phase 2 & Completion',
+      description: 'Complete your project and receive your certificate',
+      week: 4,
+      status: 'locked',
+      type: 'project',
+      videoUrl: 'https://youtube.com/watch?v=example4',
+      assignmentDescription: 'Finalize your project and prepare for presentation',
+      githubRequired: true,
+      hostingRequired: true
+    }
+  ];
+
+  useEffect(() => {
+    if (user) {
+      // Load enrollment from localStorage
+      const savedEnrollment = localStorage.getItem(`enrollment_${user.id}`);
+      if (savedEnrollment) {
+        setEnrollment(JSON.parse(savedEnrollment));
+      }
+      
+      // Load module progress
+      const savedModules = localStorage.getItem(`modules_${user.id}`);
+      if (savedModules) {
+        setModules(JSON.parse(savedModules));
+      } else {
+        setModules(defaultModules);
+      }
+
+      if (userRole === 'staff') {
+        // Load staff data
+        const mockMeetings = JSON.parse(localStorage.getItem('staff_meetings') || '[]');
+        const mockStudents = JSON.parse(localStorage.getItem('enrolled_students') || '[]');
+        setMeetings(mockMeetings);
+        setStudents(mockStudents);
+      }
+    }
+  }, [user, userRole]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -139,10 +241,36 @@ const Index = () => {
       return;
     }
 
-    // Since this is frontend only, just show success message
+    // Create enrollment
+    const enrollmentData = {
+      ...formData,
+      amount: pricing.total,
+      package_name: `${formData.internshipMode} - ${formData.duration} month(s)`,
+      mode: formData.internshipMode,
+      user_id: user.id,
+      enrolled_at: new Date().toISOString()
+    };
+
+    // Save enrollment
+    localStorage.setItem(`enrollment_${user.id}`, JSON.stringify(enrollmentData));
+    localStorage.setItem(`modules_${user.id}`, JSON.stringify(defaultModules));
+    
+    // Add to enrolled students list for staff
+    const currentStudents = JSON.parse(localStorage.getItem('enrolled_students') || '[]');
+    currentStudents.push({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      ...enrollmentData
+    });
+    localStorage.setItem('enrolled_students', JSON.stringify(currentStudents));
+
+    setEnrollment(enrollmentData);
+    setModules(defaultModules);
+
     toast({
-      title: "Application Submitted!",
-      description: `Your application for ₹${pricing.total} has been received. We'll contact you soon!`,
+      title: "Enrollment Successful!",
+      description: `Welcome to your ${enrollmentData.package_name} program! Check your profile to start learning.`,
     });
 
     // Reset form
@@ -160,6 +288,85 @@ const Index = () => {
     });
   };
 
+  const handleModuleClick = (module) => {
+    if (module.status === 'available') {
+      setCurrentModule(module);
+    }
+  };
+
+  const handleSubmission = async () => {
+    if (!currentModule) return;
+
+    // Save submission to localStorage
+    const submission = {
+      user_id: user?.id,
+      module_id: currentModule.id,
+      github_link: githubLink,
+      hosting_link: hostingLink,
+      submission_text: submissionText,
+      submitted_at: new Date().toISOString()
+    };
+    
+    const currentSubmissions = JSON.parse(localStorage.getItem(`submissions_${user?.id}`) || '[]');
+    currentSubmissions.push(submission);
+    localStorage.setItem(`submissions_${user?.id}`, JSON.stringify(currentSubmissions));
+
+    // Update module status
+    const updatedModules = modules.map(m => {
+      if (m.id === currentModule.id) {
+        return { ...m, status: 'completed' };
+      }
+      if (m.id === currentModule.id + 1) {
+        return { ...m, status: 'available' };
+      }
+      return m;
+    });
+    
+    setModules(updatedModules);
+    localStorage.setItem(`modules_${user?.id}`, JSON.stringify(updatedModules));
+    setCurrentModule(null);
+    setGithubLink('');
+    setHostingLink('');
+    setSubmissionText('');
+
+    toast({
+      title: "Assignment Submitted!",
+      description: "Your assignment has been submitted successfully. Next module unlocked!",
+    });
+  };
+
+  const handleCreateMeeting = async (e) => {
+    e.preventDefault();
+    
+    const meeting = {
+      id: Date.now(),
+      staff_id: user?.id,
+      title: newMeeting.title,
+      description: newMeeting.description,
+      date: newMeeting.date,
+      time: newMeeting.time,
+      meeting_link: newMeeting.meetingLink
+    };
+
+    const currentMeetings = JSON.parse(localStorage.getItem('staff_meetings') || '[]');
+    const updatedMeetings = [...currentMeetings, meeting];
+    localStorage.setItem('staff_meetings', JSON.stringify(updatedMeetings));
+    setMeetings(updatedMeetings);
+    
+    setNewMeeting({ title: '', description: '', date: '', time: '', meetingLink: '' });
+    setShowCreateMeeting(false);
+
+    toast({
+      title: "Meeting Scheduled!",
+      description: "Meeting has been scheduled successfully.",
+    });
+  };
+
+  const getProgressPercentage = () => {
+    const completedModules = modules.filter(m => m.status === 'completed').length;
+    return (completedModules / modules.length) * 100;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -175,16 +382,246 @@ const Index = () => {
     return <Login />;
   }
 
-  if (user && userRole === 'student') {
-    return <StudentDashboard />;
-  }
-
-  if (user && userRole === 'staff') {
-    return <StaffDashboard />;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Profile Button */}
+      {user && (
+        <div className="fixed top-4 right-4 z-50">
+          <Button
+            onClick={() => setShowProfile(!showProfile)}
+            className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg"
+            size="sm"
+          >
+            <User className="h-4 w-4 mr-2" />
+            {user.name} ({userRole})
+          </Button>
+        </div>
+      )}
+
+      {/* Profile Panel */}
+      {user && showProfile && (
+        <div className="fixed top-16 right-4 w-96 max-h-[80vh] overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
+          <div className="p-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold">{user.name}</h3>
+                <p className="text-sm opacity-90">{user.email}</p>
+                <Badge className="mt-1 bg-white/20">{userRole}</Badge>
+              </div>
+              <Button
+                onClick={signOut}
+                variant="outline"
+                size="sm"
+                className="text-white border-white/20 hover:bg-white/10"
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-4">
+            {userRole === 'student' ? (
+              <div className="space-y-4">
+                {enrollment ? (
+                  <>
+                    {/* Student Progress */}
+                    <div>
+                      <h4 className="font-semibold mb-2">Your Program</h4>
+                      <Card className="border-blue-200">
+                        <CardContent className="p-3">
+                          <p className="font-medium">{enrollment.package_name}</p>
+                          <p className="text-sm text-gray-600">{enrollment.mode} • ₹{enrollment.amount}</p>
+                          <p className="text-sm text-gray-600">{enrollment.domain}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Progress Overview */}
+                    <div>
+                      <h4 className="font-semibold mb-2">Progress</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Overall Progress</span>
+                          <span>{Math.round(getProgressPercentage())}%</span>
+                        </div>
+                        <Progress value={getProgressPercentage()} className="h-2" />
+                        <div className="flex justify-between text-xs text-gray-600">
+                          <span>{modules.filter(m => m.status === 'completed').length} completed</span>
+                          <span>{modules.filter(m => m.status === 'available').length} available</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Modules */}
+                    <div>
+                      <h4 className="font-semibold mb-2">Learning Modules</h4>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {modules.map((module) => (
+                          <Card 
+                            key={module.id} 
+                            className={`cursor-pointer transition-all ${
+                              module.status === 'available' ? 'border-blue-500 hover:shadow-md' :
+                              module.status === 'completed' ? 'border-green-500 bg-green-50' :
+                              'border-gray-300 opacity-60'
+                            }`}
+                            onClick={() => handleModuleClick(module)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {module.status === 'completed' ? (
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                    ) : module.status === 'available' ? (
+                                      <Play className="h-4 w-4 text-blue-600" />
+                                    ) : (
+                                      <Clock className="h-4 w-4 text-gray-400" />
+                                    )}
+                                    <p className="font-medium text-sm">{module.title}</p>
+                                  </div>
+                                  <p className="text-xs text-gray-600">{module.description}</p>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  Week {module.week}
+                                </Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Upcoming Meetings */}
+                    <div>
+                      <h4 className="font-semibold mb-2">Upcoming Meetings</h4>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {meetings.map((meeting) => (
+                          <Card key={meeting.id} className="border-purple-200">
+                            <CardContent className="p-3">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{meeting.title}</p>
+                                  <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+                                    <Calendar className="h-3 w-3" />
+                                    {meeting.date}
+                                    <Clock className="h-3 w-3" />
+                                    {meeting.time}
+                                  </div>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-auto"
+                                  onClick={() => window.open(meeting.meeting_link, '_blank')}
+                                >
+                                  <Video className="h-3 w-3 mr-1" />
+                                  Join
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {meetings.length === 0 && (
+                          <p className="text-sm text-gray-500 text-center py-4">No upcoming meetings</p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-600 mb-3">You haven't enrolled in any program yet.</p>
+                    <Button 
+                      size="sm" 
+                      onClick={() => {
+                        setShowProfile(false);
+                        const el = document.getElementById('application');
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      Browse Programs
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Staff Dashboard in Profile */
+              <div className="space-y-4">
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="text-lg font-bold text-blue-600">{students.length}</div>
+                      <div className="text-xs text-gray-600">Students</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="text-lg font-bold text-purple-600">{meetings.length}</div>
+                      <div className="text-xs text-gray-600">Meetings</div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Quick Actions */}
+                <div>
+                  <Button 
+                    className="w-full mb-2" 
+                    onClick={() => setShowCreateMeeting(true)}
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Schedule Meeting
+                  </Button>
+                </div>
+
+                {/* Recent Students */}
+                <div>
+                  <h4 className="font-semibold mb-2">Recent Enrollments</h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {students.slice(-3).map((student) => (
+                      <Card key={student.id} className="border-green-200">
+                        <CardContent className="p-3">
+                          <p className="font-medium text-sm">{student.name}</p>
+                          <p className="text-xs text-gray-600">{student.package_name} - ₹{student.amount}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {students.length === 0 && (
+                      <p className="text-sm text-gray-500 text-center py-4">No enrollments yet</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upcoming Meetings */}
+                <div>
+                  <h4 className="font-semibold mb-2">Scheduled Meetings</h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {meetings.map((meeting) => (
+                      <Card key={meeting.id} className="border-blue-200">
+                        <CardContent className="p-3">
+                          <p className="font-medium text-sm">{meeting.title}</p>
+                          <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+                            <Calendar className="h-3 w-3" />
+                            {meeting.date}
+                            <Clock className="h-3 w-3" />
+                            {meeting.time}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {meetings.length === 0 && (
+                      <p className="text-sm text-gray-500 text-center py-4">No meetings scheduled</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -758,6 +1195,165 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Module Details Modal */}
+      {currentModule && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle>{currentModule.title}</CardTitle>
+              <CardDescription>{currentModule.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {currentModule.videoUrl && (
+                <div>
+                  <Label>Tutorial Video</Label>
+                  <Button 
+                    className="w-full mt-2" 
+                    variant="outline"
+                    onClick={() => window.open(currentModule.videoUrl, '_blank')}
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Watch Tutorial Video
+                  </Button>
+                </div>
+              )}
+
+              {currentModule.assignmentDescription && (
+                <div>
+                  <Label>Assignment Description</Label>
+                  <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                    <p>{currentModule.assignmentDescription}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="submission">Submission Details</Label>
+                  <Textarea
+                    id="submission"
+                    placeholder="Describe your work and what you've learned..."
+                    value={submissionText}
+                    onChange={(e) => setSubmissionText(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+
+                {currentModule.githubRequired && (
+                  <div>
+                    <Label htmlFor="github">GitHub Repository Link</Label>
+                    <Input
+                      id="github"
+                      type="url"
+                      placeholder="https://github.com/username/project"
+                      value={githubLink}
+                      onChange={(e) => setGithubLink(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                )}
+
+                {currentModule.hostingRequired && (
+                  <div>
+                    <Label htmlFor="hosting">Live Project Link</Label>
+                    <Input
+                      id="hosting"
+                      type="url"
+                      placeholder="https://yourproject.vercel.app"
+                      value={hostingLink}
+                      onChange={(e) => setHostingLink(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleSubmission} className="flex-1">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Submit Assignment
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCurrentModule(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Create Meeting Modal */}
+      {showCreateMeeting && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Schedule New Meeting</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateMeeting} className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Meeting Title</Label>
+                  <Input
+                    id="title"
+                    value={newMeeting.title}
+                    onChange={(e) => setNewMeeting({...newMeeting, title: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newMeeting.description}
+                    onChange={(e) => setNewMeeting({...newMeeting, description: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={newMeeting.date}
+                    onChange={(e) => setNewMeeting({...newMeeting, date: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="time">Time</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={newMeeting.time}
+                    onChange={(e) => setNewMeeting({...newMeeting, time: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="meetingLink">Meeting Link (Google Meet/Zoom)</Label>
+                  <Input
+                    id="meetingLink"
+                    type="url"
+                    value={newMeeting.meetingLink}
+                    onChange={(e) => setNewMeeting({...newMeeting, meetingLink: e.target.value})}
+                    placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">Create Meeting</Button>
+                  <Button type="button" variant="outline" onClick={() => setShowCreateMeeting(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
