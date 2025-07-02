@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/components/Login';
+import StudentProfile from '@/components/StudentProfile';
+import StaffProfile from '@/components/StaffProfile';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +18,8 @@ const Index = () => {
   const { user, userRole, signOut } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showStudentProfile, setShowStudentProfile] = useState(false);
+  const [showStaffProfile, setShowStaffProfile] = useState(false);
   const [enrolledPackage, setEnrolledPackage] = useState<string | null>(localStorage.getItem('enrolledPackage'));
   const [currentModule, setCurrentModule] = useState(parseInt(localStorage.getItem('currentModule') || '0'));
   const [moduleProgress, setModuleProgress] = useState(JSON.parse(localStorage.getItem('moduleProgress') || '{}'));
@@ -86,6 +90,14 @@ const Index = () => {
 
   if (showLogin) {
     return <Login onClose={() => setShowLogin(false)} />;
+  }
+
+  if (showStudentProfile) {
+    return <StudentProfile onBack={() => setShowStudentProfile(false)} />;
+  }
+
+  if (showStaffProfile) {
+    return <StaffProfile onBack={() => setShowStaffProfile(false)} />;
   }
 
   const handleEnroll = (packageName: string, price: number) => {
@@ -176,9 +188,27 @@ const Index = () => {
       return;
     }
 
+    // Auto-enroll in the basic package when form is submitted
+    const basicPackage = packages.find(p => p.price === 499);
+    if (basicPackage && !enrolledPackage) {
+      setEnrolledPackage(basicPackage.name);
+      localStorage.setItem('enrolledPackage', basicPackage.name);
+      setCurrentModule(1);
+      localStorage.setItem('currentModule', '1');
+    }
+
+    // Store application data
+    const applicationData = {
+      ...formData,
+      userId: user.id,
+      submittedAt: new Date().toISOString(),
+      enrolledPackage: enrolledPackage || basicPackage?.name
+    };
+    localStorage.setItem('applicationData', JSON.stringify(applicationData));
+
     toast({
-      title: "Application Submitted!",
-      description: "Your internship application has been submitted successfully.",
+      title: "Application Submitted Successfully!",
+      description: `You've been enrolled in ${enrolledPackage || basicPackage?.name}. Check your profile to start your journey!`,
     });
 
     setFormData({
@@ -211,7 +241,13 @@ const Index = () => {
               <>
                 <Button
                   variant="outline"
-                  onClick={() => setShowProfile(!showProfile)}
+                  onClick={() => {
+                    if (userRole === 'student') {
+                      setShowStudentProfile(true);
+                    } else {
+                      setShowStaffProfile(true);
+                    }
+                  }}
                   className="flex items-center space-x-2"
                 >
                   <User className="h-4 w-4" />
