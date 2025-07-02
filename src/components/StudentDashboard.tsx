@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, Clock, Play, Upload, FileText, Video, ExternalLink } from 'lucide-react'
+import { CheckCircle, Clock, Play, Upload, FileText, Video, ExternalLink, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -94,19 +93,20 @@ const StudentDashboard = () => {
   ]
 
   useEffect(() => {
-    fetchEnrollment()
-    setModules(defaultModules)
-  }, [])
-
-  const fetchEnrollment = async () => {
-    const { data } = await supabase
-      .from('enrollments')
-      .select('*')
-      .eq('user_id', user?.id)
-      .single()
+    // Load enrollment from localStorage for frontend-only version
+    const savedEnrollment = localStorage.getItem(`enrollment_${user?.id}`)
+    if (savedEnrollment) {
+      setEnrollment(JSON.parse(savedEnrollment))
+    }
     
-    setEnrollment(data)
-  }
+    // Load module progress
+    const savedModules = localStorage.getItem(`modules_${user?.id}`)
+    if (savedModules) {
+      setModules(JSON.parse(savedModules))
+    } else {
+      setModules(defaultModules)
+    }
+  }, [user?.id])
 
   const handleModuleClick = (module: Module) => {
     if (module.status === 'available') {
@@ -117,33 +117,37 @@ const StudentDashboard = () => {
   const handleSubmission = async () => {
     if (!currentModule) return
 
-    const { error } = await supabase
-      .from('submissions')
-      .insert({
-        user_id: user?.id,
-        module_id: currentModule.id,
-        github_link: githubLink,
-        hosting_link: hostingLink,
-        submission_text: submissionText
-      })
-
-    if (!error) {
-      // Update module status
-      const updatedModules = modules.map(m => {
-        if (m.id === currentModule.id) {
-          return { ...m, status: 'completed' as const }
-        }
-        if (m.id === currentModule.id + 1) {
-          return { ...m, status: 'available' as const }
-        }
-        return m
-      })
-      setModules(updatedModules)
-      setCurrentModule(null)
-      setGithubLink('')
-      setHostingLink('')
-      setSubmissionText('')
+    // Save submission to localStorage
+    const submission = {
+      user_id: user?.id,
+      module_id: currentModule.id,
+      github_link: githubLink,
+      hosting_link: hostingLink,
+      submission_text: submissionText,
+      submitted_at: new Date().toISOString()
     }
+    
+    const currentSubmissions = JSON.parse(localStorage.getItem(`submissions_${user?.id}`) || '[]')
+    currentSubmissions.push(submission)
+    localStorage.setItem(`submissions_${user?.id}`, JSON.stringify(currentSubmissions))
+
+    // Update module status
+    const updatedModules = modules.map(m => {
+      if (m.id === currentModule.id) {
+        return { ...m, status: 'completed' as const }
+      }
+      if (m.id === currentModule.id + 1) {
+        return { ...m, status: 'available' as const }
+      }
+      return m
+    })
+    
+    setModules(updatedModules)
+    localStorage.setItem(`modules_${user?.id}`, JSON.stringify(updatedModules))
+    setCurrentModule(null)
+    setGithubLink('')
+    setHostingLink('')
+    setSubmissionText('')
   }
 
   const getProgressPercentage = () => {
@@ -156,7 +160,18 @@ const StudentDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Student Dashboard</h1>
+            <div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/'}
+                className="mb-2"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+              <h1 className="text-3xl font-bold">Student Dashboard</h1>
+            </div>
             <Button onClick={signOut} variant="outline">Sign Out</Button>
           </div>
           <Card>
@@ -176,8 +191,18 @@ const StudentDashboard = () => {
       <div className="container mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
+            <div className="flex items-center gap-4 mb-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/'}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold">Student Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.user_metadata?.name}</p>
+            <p className="text-gray-600">Welcome back, {user?.name}</p>
           </div>
           <Button onClick={signOut} variant="outline">Sign Out</Button>
         </div>

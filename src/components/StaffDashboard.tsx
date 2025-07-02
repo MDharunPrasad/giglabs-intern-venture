@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Calendar, Clock, Users, Video, FileText, Plus } from 'lucide-react'
+import { Calendar, Clock, Users, Video, FileText, Plus, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
 
 const StaffDashboard = () => {
   const { user, signOut } = useAuth()
@@ -23,50 +22,33 @@ const StaffDashboard = () => {
   const [showCreateMeeting, setShowCreateMeeting] = useState(false)
 
   useEffect(() => {
-    fetchMeetings()
-    fetchStudents()
+    // Load mock data for frontend-only version
+    const mockMeetings = JSON.parse(localStorage.getItem('staff_meetings') || '[]')
+    const mockStudents = JSON.parse(localStorage.getItem('enrolled_students') || '[]')
+    setMeetings(mockMeetings)
+    setStudents(mockStudents)
   }, [])
-
-  const fetchMeetings = async () => {
-    const { data } = await supabase
-      .from('meetings')
-      .select('*')
-      .eq('staff_id', user?.id)
-      .order('date', { ascending: true })
-    
-    setMeetings(data || [])
-  }
-
-  const fetchStudents = async () => {
-    const { data } = await supabase
-      .from('enrollments')
-      .select(`
-        *,
-        profiles (name, email)
-      `)
-    
-    setStudents(data || [])
-  }
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const { error } = await supabase
-      .from('meetings')
-      .insert({
-        staff_id: user?.id,
-        title: newMeeting.title,
-        description: newMeeting.description,
-        date: newMeeting.date,
-        time: newMeeting.time,
-        meeting_link: newMeeting.meetingLink
-      })
-
-    if (!error) {
-      setNewMeeting({ title: '', description: '', date: '', time: '', meetingLink: '' })
-      setShowCreateMeeting(false)
-      fetchMeetings()
+    const meeting = {
+      id: Date.now(),
+      staff_id: user?.id,
+      title: newMeeting.title,
+      description: newMeeting.description,
+      date: newMeeting.date,
+      time: newMeeting.time,
+      meeting_link: newMeeting.meetingLink
     }
+
+    const currentMeetings = JSON.parse(localStorage.getItem('staff_meetings') || '[]')
+    const updatedMeetings = [...currentMeetings, meeting]
+    localStorage.setItem('staff_meetings', JSON.stringify(updatedMeetings))
+    setMeetings(updatedMeetings)
+    
+    setNewMeeting({ title: '', description: '', date: '', time: '', meetingLink: '' })
+    setShowCreateMeeting(false)
   }
 
   return (
@@ -74,8 +56,18 @@ const StaffDashboard = () => {
       <div className="container mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
+            <div className="flex items-center gap-4 mb-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/'}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold">Staff Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.user_metadata?.name}</p>
+            <p className="text-gray-600">Welcome back, {user?.name}</p>
           </div>
           <Button onClick={signOut} variant="outline">Sign Out</Button>
         </div>
@@ -167,8 +159,8 @@ const StaffDashboard = () => {
                   <div key={student.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold">{student.profiles?.name}</h3>
-                        <p className="text-sm text-gray-600">{student.profiles?.email}</p>
+                        <h3 className="font-semibold">{student.name}</h3>
+                        <p className="text-sm text-gray-600">{student.email}</p>
                         <p className="text-sm text-blue-600">{student.package_name} - {student.mode}</p>
                       </div>
                       <div className="text-right">
